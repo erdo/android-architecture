@@ -1,27 +1,27 @@
-# todo-mvp
+# todo-mvo
 
-This version of the app is called todo-mvp, and provides a foundation for other samples in this project. The sample aims to:
+This version of the android-architecture todo app is written in the [MVO](https://erdo.github.io/android-fore/00-architecture.html#shoom) architectural style. It uses the [android-fore](https://erdo.github.io/android-fore/) library for its Observer implementation, and to save a little on boiler plate. The sample aims to:
 
-* Provide a basic [Model-View-Presenter](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter) (MVP) architecture without using any architectural frameworks.
-* Act as a reference point for comparing and contrasting the other samples in this project.
+* Provide a basic [Model-View-Observer](https://erdo.github.io/android-fore/00-architecture.html#shoom) (MVO) implementation example.
+* Act as a reference point for comparing and contrasting the other samples in the android-architecture project.
 
-**Note:** This project uses the following naming convention, across all repository branches, to distinguish between View classes and MVP views:
-
-* "Android View" refers to the [android.view.View](https://developer.android.com/reference/android/view/View.html) class.
-* The view that receives commands from a presenter in MVP, is referred to as "view".
 
 ### What you need
 
 Before exploring this sample, you might find it useful to familiarize yourself with the following topics:
 
 * The [project README](https://github.com/googlesamples/android-architecture/tree/master)
-* The [MVP](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter) architecture
+* The [MVO](https://erdo.github.io/android-fore/00-architecture.html#shoom) architecture
+* The [fore](https://erdo.github.io/android-fore/) library documentation for further reading
 
-The todo-mvp sample uses the following dependencies:
+The todo-mvo sample uses the following dependencies:
 * [Common Android support libraries](https://developer.android.com/topic/libraries/support-library/index.html) -  Packages in the com.android.support.* namespace provide backwards compatibility and other features.
 * [Android Testing Support Library](https://developer.android.com/topic/libraries/testing-support-library/index.html) -  A framework used to support UI tests, using both Espresso, and AndroidJUnitRunner.
 * [Mockito](http://site.mockito.org/) - A mocking framework used to implement unit tests.
 * [Guava](https://github.com/google/guava) - A set of core libraries for Java by Google, commonly used in Android apps.
+* [fore](https://erdo.github.io/android-fore/) - for its basic Observer classes and various helpers
+* [Retrofit](http://square.github.io/retrofit/) - for networking code
+* [Room](https://developer.android.com/topic/libraries/architecture/room) - for database code
 
 ### Designing the app
 
@@ -31,7 +31,10 @@ All versions of the Android Blueprints app include the same common features in a
 * AddEditTask - Used to create or edit tasks.
 * Statistics - Displays statistics related to tasks.
 
-In this version of the app, as well as other versions based on it, each screen is implemented using the following classes and interfaces:
+In this version of the app... WIP below to do,
+
+
+each screen is implemented using the following classes and interfaces:
 
 * A contract class which defines the connection between the view and the presenter.
 * An [Activity](https://developer.android.com/reference/android/app/Activity.html) which creates fragments and presenters.
@@ -68,4 +71,3 @@ The table below summarizes the amount of code used to implement this version of 
 | **Java**      |               51|         1216|           1685|           3901|
 | **XML**       |               34|           97|            338|            608|
 | **Total**     |               85|         1313|           2023|           4509|
-
