@@ -4,6 +4,12 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
 
+    compileOptions {
+        sourceCompatibility rootProject.ext.javaVersion
+        targetCompatibility rootProject.ext.javaVersion
+    }
+
+
     defaultConfig {
         applicationId "com.example.android.architecture.blueprints.todomvp"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -73,8 +79,17 @@ dependencies {
     compile "com.android.support:support-v4:$rootProject.supportLibraryVersion"
     compile "com.android.support.test.espresso:espresso-idling-resource:$rootProject.espressoVersion"
     compile "com.google.guava:guava:$rootProject.guavaVersion"
-    compile "android.arch.persistence.room:runtime:$rootProject.roomVersion"
-    annotationProcessor "android.arch.persistence.room:compiler:$rootProject.roomVersion"
+    implementation "android.arch.persistence.room:runtime:1.1.1-rc1" //db migration fails without rc version
+    annotationProcessor "android.arch.persistence.room:compiler:1.1.0"
+    implementation('com.squareup.retrofit2:retrofit:2.1.0') {
+        // exclude Retrofit’s OkHttp peer-dependency module and define your own module import
+        exclude module: 'okhttp'
+    }
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.11.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
+    implementation (group: 'co.early.fore', name: 'fore-core', version: "$rootProject.foreVersion", ext: 'aar')
+    implementation (group: 'co.early.fore', name: 'fore-retrofit', version: "$rootProject.foreVersion", ext: 'aar')
+    implementation (group: 'co.early.fore', name: 'fore-adapters', version: "$rootProject.foreVersion", ext: 'aar')
 
     // Dependencies for local unit tests
     testCompile "junit:junit:$rootProject.ext.junitVersion"

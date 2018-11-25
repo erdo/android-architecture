@@ -15,7 +15,7 @@
   -->
 
 <resources>
-    <string name="app_name">TO-DO-MVP</string>
+    <string name="app_name">TO-DO-MVO</string>
     <string name="add_task">New TO-DO</string>
     <string name="edit_task">Edit TO-DO</string>
     <string name="task_marked_complete">Task marked complete</string>
@@ -55,5 +55,15 @@
     <string name="no_tasks_completed">You have no completed TO-DOs!</string>
     <string name="no_tasks_add">Add a TO-DO item +</string>
     <string name="refresh">Refresh</string>
+
+    <!-- common error messages -->
+    <string name="msg_empty_message"></string>
+    <string name="msg_error_misc">Some kind of error, maybe check logs</string>
+    <string name="msg_error_network">Network error, check connection</string>
+    <string name="msg_error_server">Server down, try again soon</string>
+    <string name="msg_error_client">Client error</string>
+    <string name="msg_error_session_timeout">Unauthorized</string>
+    <string name="msg_error_busy">Busy</string>
+    <string name="msg_error_cancelled">Cancelled</string>
 
 </resources>

@@ -26,10 +26,11 @@ task clean(type: Delete) {
 ext {
     // Sdk and tools
     // Support library and architecture components support minSdk 14 and above.
-    minSdkVersion = 14
+    minSdkVersion = 16
     targetSdkVersion = 26
     compileSdkVersion = 26
     buildToolsVersion = '26.0.2'
+    javaVersion = JavaVersion.VERSION_1_8
 
     // App dependencies
     supportLibraryVersion = '26.1.0'
@@ -42,4 +43,5 @@ ext {
     rulesVersion = '1.0.1'
     espressoVersion = '3.0.1'
     roomVersion = "1.0.0"
+    foreVersion = "0.11.1"
 }
