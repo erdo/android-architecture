@@ -19,14 +19,10 @@ package com.example.android.architecture.blueprints.todoapp.ui.tasks;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.VisibleForTesting;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
-import android.support.test.espresso.IdlingResource;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -38,12 +34,12 @@ import com.example.android.architecture.blueprints.todoapp.R;
 import com.example.android.architecture.blueprints.todoapp.feature.tasks.Filter;
 import com.example.android.architecture.blueprints.todoapp.feature.tasks.TaskFetcher;
 import com.example.android.architecture.blueprints.todoapp.feature.tasks.TaskListModel;
-import com.example.android.architecture.blueprints.todoapp.statistics.StatisticsActivity;
+import com.example.android.architecture.blueprints.todoapp.ui.BaseActivity;
 import com.example.android.architecture.blueprints.todoapp.ui.addedit.AddEditTaskActivity;
+import com.example.android.architecture.blueprints.todoapp.ui.statistics.StatisticsActivity;
 import com.example.android.architecture.blueprints.todoapp.util.ActivityUtils;
-import com.example.android.architecture.blueprints.todoapp.util.EspressoIdlingResource;
 
-public class TasksActivity extends AppCompatActivity {
+public class TasksActivity extends BaseActivity {
 
     //models
     private TaskListModel taskListModel;
@@ -79,7 +75,7 @@ public class TasksActivity extends AppCompatActivity {
                 (TasksFragment) getSupportFragmentManager().findFragmentById(R.id.contentFrame);
         if (tasksFragment == null) {
             // Create the fragment
-            tasksFragment = new TasksFragment();
+            tasksFragment = TasksFragment.newInstance();
             ActivityUtils.addFragmentToActivity(
                     getSupportFragmentManager(), tasksFragment, R.id.contentFrame);
         }
@@ -113,7 +109,7 @@ public class TasksActivity extends AppCompatActivity {
                 break;
             case R.id.menu_refresh:
                 taskFetcher.fetchTaskItems(
-                        () -> {},//success is no op, but maybe you would want to move to another activity etc
+                        () -> {},//success is no op, but maybe you would want to move to another activity etc (observers handle UI updates)
                         failureMessage -> showMessage(failureMessage.getString(getResources())));
                 break;
         }
@@ -169,19 +165,8 @@ public class TasksActivity extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         // If a task was successfully added, show snackbar
-        if (AddEditTaskActivity.REQUEST_ADD_TASK == requestCode && Activity.RESULT_OK == resultCode) {
+        if (AddEditTaskActivity.REQUEST_CODE_ADD_TASK == requestCode && Activity.RESULT_OK == resultCode) {
             showMessage(getString(R.string.successfully_saved_task_message));
         }
-    }
-
-    public void showMessage(String message) {
-        if (!isFinishing()){
-            Snackbar.make(findViewById(R.id.contentFrame), message, Snackbar.LENGTH_LONG).show();
-        }
-    }
-
-    @VisibleForTesting
-    public IdlingResource getCountingIdlingResource() {
-        return EspressoIdlingResource.getIdlingResource();
     }
 }

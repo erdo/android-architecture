@@ -17,80 +17,107 @@
 package com.example.android.architecture.blueprints.todoapp.ui.statistics;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.android.architecture.blueprints.todoapp.App;
 import com.example.android.architecture.blueprints.todoapp.R;
-import com.example.android.architecture.blueprints.todoapp.statistics.StatisticsContract;
+import com.example.android.architecture.blueprints.todoapp.feature.tasks.TaskFetcher;
+import com.example.android.architecture.blueprints.todoapp.feature.tasks.TaskListModel;
+import com.example.android.architecture.blueprints.todoapp.ui.BaseActivity;
+import com.example.android.architecture.blueprints.todoapp.ui.widget.ScrollChildSwipeRefreshLayout;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import co.early.fore.core.observer.Observer;
+import co.early.fore.core.ui.SyncableView;
 
 /**
  * Main UI for the statistics screen.
  */
-public class StatisticsFragment extends Fragment implements StatisticsContract.View {
+public class StatisticsFragment extends Fragment implements SyncableView {
 
+    //models
+    private TaskListModel taskListModel;
+    private TaskFetcher taskFetcher;
+
+    // UI elements
     private TextView mStatisticsTV;
+    private ScrollChildSwipeRefreshLayout swipeRefreshLayout;
 
-    private StatisticsContract.Presenter mPresenter;
+    //single observer reference
+    private Observer observer = this::syncView;
 
-    public static StatisticsFragment newInstance() {
-        return new StatisticsFragment();
-    }
 
-    @Override
-    public void setPresenter(@NonNull StatisticsContract.Presenter presenter) {
-        mPresenter = checkNotNull(presenter);
-    }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.statistics_frag, container, false);
-        mStatisticsTV = (TextView) root.findViewById(R.id.statistics);
+
+        setupModelReferences();
+
+        View root = setupUiReferences(inflater, container);
+
+        setupClickListeners();
+
         return root;
+    }
+
+    private void setupModelReferences(){
+        taskFetcher = App.get(TaskFetcher.class);
+        taskListModel = App.get(TaskListModel.class);
+    }
+
+    private View setupUiReferences(LayoutInflater inflater, ViewGroup container) {
+
+        View root = inflater.inflate(R.layout.statistics_frag, container, false);
+
+        mStatisticsTV = root.findViewById(R.id.statistics);
+        // Set up progress indicator
+        swipeRefreshLayout = root.findViewById(R.id.refresh_layout);
+        swipeRefreshLayout.setColorSchemeColors(
+                ContextCompat.getColor(getActivity(), R.color.colorPrimary),
+                ContextCompat.getColor(getActivity(), R.color.colorAccent),
+                ContextCompat.getColor(getActivity(), R.color.colorPrimaryDark)
+        );
+
+        return root;
+    }
+
+    private void setupClickListeners() {
+        swipeRefreshLayout.setOnRefreshListener(() -> taskFetcher.fetchTaskItems(
+                () -> {
+                },//success is no op, but maybe you would want to move to another activity etc (observers handle UI updates)
+                failureMessage -> ((BaseActivity)getContext()).showMessage(failureMessage.getString(getResources()))));
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        mPresenter.start();
+        taskFetcher.addObserver(observer);
+        taskListModel.addObserver(observer);
+        syncView();
     }
 
     @Override
-    public void setProgressIndicator(boolean active) {
-        if (active) {
-            mStatisticsTV.setText(getString(R.string.loading));
-        } else {
-            mStatisticsTV.setText("");
-        }
+    public void onPause() {
+        super.onPause();
+        taskFetcher.removeObserver(observer);
+        taskListModel.removeObserver(observer);
     }
 
     @Override
-    public void showStatistics(int numberOfIncompleteTasks, int numberOfCompletedTasks) {
-        if (numberOfCompletedTasks == 0 && numberOfIncompleteTasks == 0) {
-            mStatisticsTV.setText(getResources().getString(R.string.statistics_no_tasks));
-        } else {
-            String displayString = getResources().getString(R.string.statistics_active_tasks) + " "
-                    + numberOfIncompleteTasks + "\n" + getResources().getString(
-                    R.string.statistics_completed_tasks) + " " + numberOfCompletedTasks;
-            mStatisticsTV.setText(displayString);
-        }
-    }
-
-    @Override
-    public void showLoadingStatisticsError() {
-        mStatisticsTV.setText(getResources().getString(R.string.statistics_error));
-    }
-
-    @Override
-    public boolean isActive() {
-        return isAdded();
+    public void syncView() {
+        mStatisticsTV.setText(
+                taskListModel.getAllTasksCount() == 0 ?
+                    getResources().getString(R.string.statistics_no_tasks) :
+                    getResources().getString(R.string.statistics_active_tasks) + " "
+                    + taskListModel.getActiveTasksCount() + "\n" + getResources().getString(
+                    R.string.statistics_completed_tasks) + " " + taskListModel.getCompletedTasksCount());
+        swipeRefreshLayout.setRefreshing(taskFetcher.isBusy());
     }
 }

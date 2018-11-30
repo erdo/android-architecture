@@ -21,5 +21,6 @@
     <dimen name="activity_horizontal_margin">64dp</dimen>
 
     <dimen name="fab_margin">24dp</dimen>
+    <dimen name="fab_half_margin">12dp</dimen>
 
 </resources>

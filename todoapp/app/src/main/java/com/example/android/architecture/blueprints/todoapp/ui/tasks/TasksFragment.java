@@ -32,9 +32,11 @@ import android.widget.TextView;
 
 import com.example.android.architecture.blueprints.todoapp.App;
 import com.example.android.architecture.blueprints.todoapp.R;
-import com.example.android.architecture.blueprints.todoapp.data.Task;
+import com.example.android.architecture.blueprints.todoapp.feature.tasks.CurrentTaskModel;
 import com.example.android.architecture.blueprints.todoapp.feature.tasks.TaskFetcher;
+import com.example.android.architecture.blueprints.todoapp.feature.tasks.TaskItem;
 import com.example.android.architecture.blueprints.todoapp.feature.tasks.TaskListModel;
+import com.example.android.architecture.blueprints.todoapp.ui.BaseActivity;
 import com.example.android.architecture.blueprints.todoapp.ui.addedit.AddEditTaskActivity;
 import com.example.android.architecture.blueprints.todoapp.ui.widget.ScrollChildSwipeRefreshLayout;
 
@@ -42,38 +44,34 @@ import co.early.fore.core.observer.Observer;
 import co.early.fore.core.ui.SyncableView;
 
 /**
- * Display a list of {@link Task}s. User can choose to view all, active or completed tasks.
+ * Display a list of {@link TaskItem}s. User can choose to view all, active or completed tasks.
  */
 public class TasksFragment extends Fragment implements SyncableView {
 
     //models
     private TaskListModel taskListModel;
     private TaskFetcher taskFetcher;
+    private CurrentTaskModel currentTaskModel;
 
     //UI elements
-
     private TasksAdapter mListAdapter;
-
     private View mNoTasksView;
-
     private ImageView mNoTaskIcon;
-
     private TextView mNoTaskMainView;
-
     private TextView mNoTaskAddView;
-
     private LinearLayout mTasksView;
-
     private TextView mFilteringLabelView;
-
     private RecyclerView listView;
-
     private FloatingActionButton fab;
-
     private ScrollChildSwipeRefreshLayout swipeRefreshLayout;
 
     //single observer reference
-    Observer observer = this::syncView;
+    private Observer observer = this::syncView;
+
+
+    public static TasksFragment newInstance() {
+        return new TasksFragment();
+    }
 
 
     @Nullable
@@ -95,6 +93,7 @@ public class TasksFragment extends Fragment implements SyncableView {
     private void setupModelReferences(){
         taskListModel = App.get(TaskListModel.class);
         taskFetcher = App.get(TaskFetcher.class);
+        currentTaskModel = App.get(CurrentTaskModel.class);
     }
 
     private View setupUiReferences(LayoutInflater inflater, ViewGroup container) {
@@ -114,7 +113,6 @@ public class TasksFragment extends Fragment implements SyncableView {
 
         // Set up floating action button
         fab = getActivity().findViewById(R.id.fab_add_task);
-        fab.setImageResource(R.drawable.ic_add);
 
         // Set up progress indicator
         swipeRefreshLayout = root.findViewById(R.id.refresh_layout);
@@ -131,7 +129,7 @@ public class TasksFragment extends Fragment implements SyncableView {
 
     private void setupAdapter(){
 
-        mListAdapter = new TasksAdapter(taskListModel, new TasksAdapter.TaskActionsCallBack() {
+        mListAdapter = new TasksAdapter(taskListModel, currentTaskModel, new TasksAdapter.TaskActionsCallBack() {
             @Override
             public void taskMarkedComplete() {
                 ((TasksActivity)getContext()).showMessage(getString(R.string.task_marked_complete));
@@ -151,13 +149,19 @@ public class TasksFragment extends Fragment implements SyncableView {
 
     private void setupClickListeners(){
 
-        mNoTaskAddView.setOnClickListener(v -> AddEditTaskActivity.startActivityForResult(getActivity()));
+        mNoTaskAddView.setOnClickListener(v -> {
+            currentTaskModel.createNewEmptyTask();
+            AddEditTaskActivity.startAddActivityForResult(getActivity());
+        });
 
-        fab.setOnClickListener(v -> AddEditTaskActivity.startActivityForResult(getActivity()));
+        fab.setOnClickListener(v -> {
+            currentTaskModel.createNewEmptyTask();
+            AddEditTaskActivity.startAddActivityForResult(getActivity());
+        });
 
         swipeRefreshLayout.setOnRefreshListener(() -> taskFetcher.fetchTaskItems(
-                () -> {},//success is no op, but maybe you would want to move to another activity etc
-                failureMessage -> ((TasksActivity)getContext()).showMessage(failureMessage.getString(getResources()))));
+                () -> {},//success is no op, but maybe you would want to move to another activity etc (observers handle UI updates)
+                failureMessage -> ((BaseActivity)getContext()).showMessage(failureMessage.getString(getResources()))));
     }
 
     //below makes the UI reactive

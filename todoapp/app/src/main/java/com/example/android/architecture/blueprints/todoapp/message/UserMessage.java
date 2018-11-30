@@ -20,6 +20,7 @@ public enum UserMessage implements Parcelable {
     ERROR_CLIENT(R.string.msg_error_client),
     ERROR_SESSION_TIMED_OUT(R.string.msg_error_session_timeout),
     ERROR_BUSY(R.string.msg_error_busy),
+    ERROR_NOT_FOUND(R.string.msg_error_not_found),
     ERROR_CANCELLED(R.string.msg_error_cancelled);
 
     private String message;

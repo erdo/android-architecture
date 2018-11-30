@@ -9,12 +9,12 @@ import retrofit2.http.Query;
 /**
  * These stubs are hosted at https://www.mocky.io/
  *
- * http://www.mocky.io/v2/5beaf99e2f0000d731da3d74
+ * http://www.mocky.io/v2/5c055d963300005f00e81252
  *
  */
 public interface TaskItemService {
 
-    @GET("5beaf99e2f0000d731da3d74/")
+    @GET("5c055d963300005f00e81252/")
     Call<List<TaskItemPojo>> getTaskItems(@Query("mocky-delay") String delayScalaDurationFormat);
 
 }

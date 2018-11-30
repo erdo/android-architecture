@@ -17,7 +17,10 @@ import co.early.fore.core.time.SystemTimeWrapper;
 import co.early.fore.retrofit.CallProcessor;
 
 /**
- * gets a list of tasks from the network, checks for duplicates and adds them to the database
+ * Gets a list of tasks from the network, checks for duplicates and adds them to the database
+ *
+ * This app doesn't handle full synchronization with data on a server, local
+ * changes are not pushed to the internet for example.
  */
 public class TaskFetcher extends ObservableImp {
 
@@ -32,7 +35,6 @@ public class TaskFetcher extends ObservableImp {
     private final Logger logger;
 
     private int connections;
-    private int counter;
 
     public TaskFetcher(TaskListModel taskListModel, TaskItemService service, CallProcessor<UserMessage> callProcessor,
                        SystemTimeWrapper systemTimeWrapper, Logger logger, WorkMode workMode) {

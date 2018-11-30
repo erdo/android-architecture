@@ -16,35 +16,38 @@
 
 package com.example.android.architecture.blueprints.todoapp.ui.taskdetail;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
-import com.example.android.architecture.blueprints.todoapp.Injection;
+import com.example.android.architecture.blueprints.todoapp.App;
 import com.example.android.architecture.blueprints.todoapp.R;
-import com.example.android.architecture.blueprints.todoapp.taskdetail.TaskDetailFragment;
-import com.example.android.architecture.blueprints.todoapp.taskdetail.TaskDetailPresenter;
+import com.example.android.architecture.blueprints.todoapp.feature.tasks.CurrentTaskModel;
+import com.example.android.architecture.blueprints.todoapp.ui.BaseActivity;
+import com.example.android.architecture.blueprints.todoapp.ui.addedit.AddEditTaskActivity;
 import com.example.android.architecture.blueprints.todoapp.util.ActivityUtils;
 
 /**
  * Displays task details screen.
  */
-public class TaskDetailActivity extends AppCompatActivity {
+public class TaskDetailActivity extends BaseActivity {
 
-    public static final String EXTRA_TASK_ID = "TASK_ID";
+    //models
+    private CurrentTaskModel currentTaskModel;
 
-
-    public static void start(Context context, long id) {
-        Intent intent = build(context, id);
+    public static void start(Context context) {
+        Intent intent = build(context);
         context.startActivity(intent);
     }
 
-    public static Intent build(Context context, long id) {
+    public static Intent build(Context context) {
         Intent intent = new Intent(context, TaskDetailActivity.class);
-        intent.putExtra(EXTRA_TASK_ID, id);
         return intent;
     }
 
@@ -55,30 +58,53 @@ public class TaskDetailActivity extends AppCompatActivity {
         setContentView(R.layout.taskdetail_act);
 
         // Set up the toolbar.
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
         ab.setDisplayHomeAsUpEnabled(true);
         ab.setDisplayShowHomeEnabled(true);
 
-        // Get the requested task id
-        String taskId = getIntent().getStringExtra(EXTRA_TASK_ID);
-
         TaskDetailFragment taskDetailFragment = (TaskDetailFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.contentFrame);
 
         if (taskDetailFragment == null) {
-            taskDetailFragment = TaskDetailFragment.newInstance(taskId);
+            taskDetailFragment = TaskDetailFragment.newInstance();
 
             ActivityUtils.addFragmentToActivity(getSupportFragmentManager(),
                     taskDetailFragment, R.id.contentFrame);
         }
 
-        // Create the presenter
-        new TaskDetailPresenter(
-                taskId,
-                Injection.provideTasksRepository(getApplicationContext()),
-                taskDetailFragment);
+        setupModelReferences();
+    }
+
+    private void setupModelReferences(){
+        currentTaskModel = App.get(CurrentTaskModel.class);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.taskdetail_fragment_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_delete:
+                finish();
+                currentTaskModel.deleteCurrentTaskFromDb();
+                return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // If the task was edited successfully, go back to the list.
+        if (AddEditTaskActivity.REQUEST_CODE_EDIT_TASK == requestCode && Activity.RESULT_OK == resultCode) {
+            finish();
+        }
     }
 
     @Override

@@ -76,6 +76,10 @@ public class TaskItem implements DiffComparator<TaskItem> {
         return dirty;
     }
 
+    public long getEntityId(){
+        return taskItemEntity.getId();
+    }
+
     TaskItemEntity getEntity(){
         return taskItemEntity;
     }

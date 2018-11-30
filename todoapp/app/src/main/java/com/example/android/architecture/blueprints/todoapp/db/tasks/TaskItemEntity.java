@@ -15,6 +15,7 @@ public class TaskItemEntity {
 
     public static final String TABLE_NAME = "TaskItemEntity";//must be the name of the Entity class
     public static final String COLUMN_CREATE_TIMESTAMP = "create_timestamp";
+    public static final String COLUMN_ID = "id";
     public static final String COLUMN_TITLE = "title";
     public static final String COLUMN_DESCRIPTION = "description";
     public static final String COLUMN_COMPLETED = "completed";

@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.example.android.architecture.blueprints.todoapp.App;
 import com.example.android.architecture.blueprints.todoapp.R;
+import com.example.android.architecture.blueprints.todoapp.feature.tasks.CurrentTaskModel;
 import com.example.android.architecture.blueprints.todoapp.feature.tasks.TaskItem;
 import com.example.android.architecture.blueprints.todoapp.feature.tasks.TaskListModel;
 import com.example.android.architecture.blueprints.todoapp.ui.taskdetail.TaskDetailActivity;
@@ -19,12 +20,16 @@ import static android.support.v7.widget.RecyclerView.NO_POSITION;
 
 public class TasksAdapter extends ChangeAwareAdapter<TasksAdapter.ViewHolder> {
 
+    //model that drives the adapter
     private final TaskListModel taskListModel;
+    private final CurrentTaskModel currentTaskModel;
+
     private final TaskActionsCallBack taskActionsCallBack;
 
-    public TasksAdapter(TaskListModel taskListModel, TaskActionsCallBack taskActionsCallBack) {
+    public TasksAdapter(TaskListModel taskListModel, CurrentTaskModel currentTaskModel, TaskActionsCallBack taskActionsCallBack) {
         super(taskListModel);
         this.taskListModel = taskListModel;
+        this.currentTaskModel = currentTaskModel;
         this.taskActionsCallBack = taskActionsCallBack;
     }
 
@@ -62,7 +67,8 @@ public class TasksAdapter extends ChangeAwareAdapter<TasksAdapter.ViewHolder> {
         holder.itemView.setOnClickListener(view -> {
             int betterPosition = holder.getAdapterPosition();
             if (betterPosition != NO_POSITION) {
-                TaskDetailActivity.start(App.instance(), betterPosition);
+                currentTaskModel.loadTask(taskListModel.get(betterPosition).getEntityId());
+                TaskDetailActivity.start(App.instance());
             }
         });
     }

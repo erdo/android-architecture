@@ -22,19 +22,17 @@ import android.support.v4.app.NavUtils;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
-import com.example.android.architecture.blueprints.todoapp.Injection;
 import com.example.android.architecture.blueprints.todoapp.R;
-import com.example.android.architecture.blueprints.todoapp.statistics.StatisticsPresenter;
+import com.example.android.architecture.blueprints.todoapp.ui.BaseActivity;
 import com.example.android.architecture.blueprints.todoapp.util.ActivityUtils;
 
 /**
  * Show statistics for tasks.
  */
-public class StatisticsActivity extends AppCompatActivity {
+public class StatisticsActivity extends BaseActivity {
 
     private DrawerLayout mDrawerLayout;
 
@@ -63,13 +61,10 @@ public class StatisticsActivity extends AppCompatActivity {
         StatisticsFragment statisticsFragment = (StatisticsFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.contentFrame);
         if (statisticsFragment == null) {
-            statisticsFragment = StatisticsFragment.newInstance();
+            statisticsFragment = new StatisticsFragment();
             ActivityUtils.addFragmentToActivity(getSupportFragmentManager(),
                     statisticsFragment, R.id.contentFrame);
         }
-
-        new StatisticsPresenter(
-                Injection.provideTasksRepository(getApplicationContext()), statisticsFragment);
     }
 
     @Override

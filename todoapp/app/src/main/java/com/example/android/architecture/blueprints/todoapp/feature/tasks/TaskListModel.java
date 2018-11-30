@@ -7,6 +7,7 @@ import android.support.v7.util.DiffUtil;
 
 import com.example.android.architecture.blueprints.todoapp.db.tasks.TaskItemDatabase;
 import com.example.android.architecture.blueprints.todoapp.db.tasks.TaskItemEntity;
+import com.example.android.architecture.blueprints.todoapp.message.UserMessage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,9 @@ import co.early.fore.adapters.DiffSpec;
 import co.early.fore.adapters.Diffable;
 import co.early.fore.core.Affirm;
 import co.early.fore.core.WorkMode;
+import co.early.fore.core.callbacks.FailureCallback;
+import co.early.fore.core.callbacks.FailureCallbackWithPayload;
+import co.early.fore.core.callbacks.SuccessCallbackWithPayload;
 import co.early.fore.core.logging.Logger;
 import co.early.fore.core.observer.ObservableImp;
 import co.early.fore.core.threading.AsyncBuilder;
@@ -295,6 +299,11 @@ public class TaskListModel extends ObservableImp implements Diffable {
 
         logger.i(LOG_TAG, "update()");
 
+        if (taskItem.getEntity().getId() == 0){ //this isn't in the database yet, lets add it instead
+            add(taskItem);
+            return;
+        }
+
         //fire to the db and forget - the invalidation tracker will keep us informed of changes
         new AsyncBuilder<TaskItemEntity, Integer>(workMode)
                 .doInBackground(taskItems -> {
@@ -347,9 +356,9 @@ public class TaskListModel extends ObservableImp implements Diffable {
 
                             boolean duplicate = false;
 
-                            for(TaskItemEntity dbItem : dbItems) {
+                            for (TaskItemEntity dbItem : dbItems) {
                                 //naive method to decide if we have a duplicate or not
-                                if (newItem.getTitle().equals(dbItem.getTitle())){
+                                if (newItem.getTitle().equals(dbItem.getTitle())) {
                                     duplicate = true;
                                     break;
                                 }
@@ -434,6 +443,29 @@ public class TaskListModel extends ObservableImp implements Diffable {
     public TaskItem get(int index) {
         checkIndex(index);
         return taskItems.get(index);
+    }
+
+    public void getItemById(long entityId,
+                            final SuccessCallbackWithPayload<TaskItem> successCallback,
+                            final FailureCallbackWithPayload<UserMessage> failureCallback) {
+
+        new AsyncBuilder<Long, TaskItem>(workMode)
+                .doInBackground(id -> {
+                    synchronized (dbMonitor) {
+
+                        TaskItemEntity taskItemEntity = taskItemDatabase.taskItemDao().getTaskItem(id[0]);
+
+                        return (taskItemEntity == null) ? null : new TaskItem(taskItemEntity);
+                    }
+                })
+                .onPostExecute(payload -> {
+                    if (payload == null) {
+                        failureCallback.fail(UserMessage.ERROR_NOT_FOUND);
+                    } else {
+                        successCallback.success(payload);
+                    }
+                })
+                .execute(entityId);
     }
 
     public int size() {

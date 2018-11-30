@@ -7,6 +7,7 @@ import com.example.android.architecture.blueprints.todoapp.api.CustomGlobalReque
 import com.example.android.architecture.blueprints.todoapp.api.CustomRetrofitBuilder;
 import com.example.android.architecture.blueprints.todoapp.api.tasks.TaskItemService;
 import com.example.android.architecture.blueprints.todoapp.db.tasks.TaskItemDatabase;
+import com.example.android.architecture.blueprints.todoapp.feature.tasks.CurrentTaskModel;
 import com.example.android.architecture.blueprints.todoapp.feature.tasks.TaskFetcher;
 import com.example.android.architecture.blueprints.todoapp.feature.tasks.TaskListModel;
 import com.example.android.architecture.blueprints.todoapp.message.UserMessage;
@@ -43,7 +44,7 @@ class ObjectGraph {
 
         // create dependency graph
         // this list can get long, formatting one parameter per line helps with merging
-        AndroidLogger logger = new AndroidLogger();
+        AndroidLogger logger = new AndroidLogger("todo-mvo");
         SystemTimeWrapper systemTimeWrapper = new SystemTimeWrapper();
         TaskItemDatabase taskItemDatabase = TaskItemDatabase.getInstance(
                 application,
@@ -68,13 +69,17 @@ class ObjectGraph {
                 systemTimeWrapper,
                 logger,
                 workMode);
-
+        CurrentTaskModel currentTaskModel = new CurrentTaskModel(
+                taskListModel,
+                systemTimeWrapper,
+                logger,
+                workMode);
 
         // add models to the dependencies map if you will need them later
         dependencies.put(TaskFetcher.class, taskFetcher);
         dependencies.put(TaskListModel.class, taskListModel);
+        dependencies.put(CurrentTaskModel.class, currentTaskModel);
         dependencies.put(Logger.class, logger);
-
     }
 
     void init() {

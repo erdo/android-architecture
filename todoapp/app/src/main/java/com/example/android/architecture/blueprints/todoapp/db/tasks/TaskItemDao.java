@@ -10,6 +10,7 @@ import java.util.List;
 
 import static com.example.android.architecture.blueprints.todoapp.db.tasks.TaskItemEntity.COLUMN_COMPLETED;
 import static com.example.android.architecture.blueprints.todoapp.db.tasks.TaskItemEntity.COLUMN_CREATE_TIMESTAMP;
+import static com.example.android.architecture.blueprints.todoapp.db.tasks.TaskItemEntity.COLUMN_ID;
 import static com.example.android.architecture.blueprints.todoapp.db.tasks.TaskItemEntity.TABLE_NAME;
 
 
@@ -50,5 +51,8 @@ public abstract class TaskItemDao {
 
     @Query("DELETE FROM " + TABLE_NAME + " WHERE " + COLUMN_COMPLETED + " = 1")
     public abstract int clearCompleted();
+
+    @Query("SELECT * FROM " + TABLE_NAME + " WHERE " + COLUMN_ID + " = :entityId ")
+    public abstract TaskItemEntity getTaskItem(long entityId);
 
 }

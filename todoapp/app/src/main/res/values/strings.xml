@@ -64,6 +64,7 @@
     <string name="msg_error_client">Client error</string>
     <string name="msg_error_session_timeout">Unauthorized</string>
     <string name="msg_error_busy">Busy</string>
+    <string name="msg_error_not_found">Nothing Found</string>
     <string name="msg_error_cancelled">Cancelled</string>
 
 </resources>
