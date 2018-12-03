@@ -31,7 +31,9 @@ All versions of the Android Blueprints app include the same common features in a
 * AddEditTask - Used to create or edit tasks.
 * Statistics - Displays statistics related to tasks.
 
-In this version of the app... WIP below to do,
+In this version of the app...
+
+#### WIP below to do....
 
 
 each screen is implemented using the following classes and interfaces:
