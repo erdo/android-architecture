@@ -4,17 +4,15 @@ import android.text.Editable;
 import android.text.TextWatcher;
 
 import co.early.fore.core.Affirm;
-import co.early.fore.core.ui.SyncableView;
 
 
-public class SyncerTextWatcher implements TextWatcher {
 
-    private final SyncableView syncableView;
+public class SimpleTextWatcher implements TextWatcher {
+
     private final TextChangedListener textChangedListener;
 
-    public SyncerTextWatcher(TextChangedListener textChangedListener, SyncableView syncableView) {
+    public SimpleTextWatcher(TextChangedListener textChangedListener) {
         this.textChangedListener = Affirm.notNull(textChangedListener);
-        this.syncableView = Affirm.notNull(syncableView);
     }
 
     @Override
@@ -29,12 +27,11 @@ public class SyncerTextWatcher implements TextWatcher {
 
     @Override
     public void afterTextChanged(Editable s) {
-        textChangedListener.changed(s);
-        syncableView.syncView();
+        textChangedListener.changed(s.toString());
     }
 
     public interface TextChangedListener {
-        void changed(Editable newText);
+        void changed(String newText);
     }
 }
 

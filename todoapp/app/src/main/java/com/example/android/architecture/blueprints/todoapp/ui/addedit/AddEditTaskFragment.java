@@ -108,10 +108,10 @@ public class AddEditTaskFragment extends Fragment implements SyncableView {
 
     private void setupClickListeners(){
 
-        mTitle.addTextChangedListener(new SyncerTextWatcher(
-                newText -> currentTaskModel.setTitle(newText.toString()), this));
-        mDescription.addTextChangedListener(new SyncerTextWatcher(
-                newText -> currentTaskModel.setDescription(newText.toString()), this));
+        mTitle.addTextChangedListener(new SimpleTextWatcher(
+                newText -> currentTaskModel.setTitle(newText)));
+        mDescription.addTextChangedListener(new SimpleTextWatcher(
+                newText -> currentTaskModel.setDescription(newText)));
 
         fab.setOnClickListener(v -> {
             currentTaskModel.saveChanges();
