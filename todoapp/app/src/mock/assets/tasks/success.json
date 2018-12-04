@@ -1,0 +1,17 @@
+[
+  {
+    "title":"mock eggs",
+    "description":"buy eggs at the shop",
+    "completed":false
+  },
+  {
+    "title":"mock milk",
+    "description":"buy milk at the shop",
+    "completed":false
+  },
+  {
+    "title":"mock bread",
+    "description":"buy bread at the shop",
+    "completed":false
+  }
+]

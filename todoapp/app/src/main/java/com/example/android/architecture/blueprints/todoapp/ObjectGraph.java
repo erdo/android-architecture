@@ -3,8 +3,8 @@ package com.example.android.architecture.blueprints.todoapp;
 import android.app.Application;
 
 import com.example.android.architecture.blueprints.todoapp.api.CustomGlobalErrorHandler;
-import com.example.android.architecture.blueprints.todoapp.api.CustomGlobalRequestInterceptor;
 import com.example.android.architecture.blueprints.todoapp.api.CustomRetrofitBuilder;
+import com.example.android.architecture.blueprints.todoapp.api.InterceptorProvider;
 import com.example.android.architecture.blueprints.todoapp.api.tasks.TaskItemService;
 import com.example.android.architecture.blueprints.todoapp.db.tasks.TaskItemDatabase;
 import com.example.android.architecture.blueprints.todoapp.feature.tasks.CurrentTaskModel;
@@ -20,7 +20,6 @@ import co.early.fore.core.logging.AndroidLogger;
 import co.early.fore.core.logging.Logger;
 import co.early.fore.core.time.SystemTimeWrapper;
 import co.early.fore.retrofit.CallProcessor;
-import co.early.fore.retrofit.InterceptorLogging;
 import retrofit2.Retrofit;
 
 import static co.early.fore.core.Affirm.notNull;
@@ -57,8 +56,7 @@ class ObjectGraph {
                 workMode);
         // networking classes common to all models
         Retrofit retrofit = CustomRetrofitBuilder.create(
-                new CustomGlobalRequestInterceptor(logger),
-                new InterceptorLogging(logger));//logging interceptor should be the last one
+                InterceptorProvider.getInterceptors(logger));
         CallProcessor<UserMessage> callProcessor = new CallProcessor<UserMessage>(
                 new CustomGlobalErrorHandler(logger),
                 logger);
