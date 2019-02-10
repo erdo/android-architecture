@@ -24,7 +24,10 @@ import retrofit2.Retrofit;
 
 import static co.early.fore.core.Affirm.notNull;
 
-
+/**
+ * This is the non-Dagger way of setting up your object graph, it's just here so that you can see an
+ * example. See AppModule for how the object graph is being setup for this app using Dagger 2
+ */
 class ObjectGraph {
 
     private volatile boolean initialized = false;

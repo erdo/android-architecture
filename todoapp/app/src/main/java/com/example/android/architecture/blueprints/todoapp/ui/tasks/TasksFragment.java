@@ -91,9 +91,9 @@ public class TasksFragment extends Fragment implements SyncableView {
     }
 
     private void setupModelReferences(){
-        taskListModel = App.get(TaskListModel.class);
-        taskFetcher = App.get(TaskFetcher.class);
-        currentTaskModel = App.get(CurrentTaskModel.class);
+        taskListModel = App.inst().getAppComponent().getTaskListModel();
+        taskFetcher = App.inst().getAppComponent().getTaskFetcher();
+        currentTaskModel = App.inst().getAppComponent().getCurrentTaskModel();
     }
 
     private View setupUiReferences(LayoutInflater inflater, ViewGroup container) {

@@ -49,7 +49,7 @@ public class TasksAdapter extends ChangeAwareAdapter<TasksAdapter.ViewHolder> {
         holder.title.setText(item.getTitleForList());
         holder.completeCB.setChecked(item.isCompleted());
 
-        holder.itemView.setBackgroundDrawable(App.instance().getResources().getDrawable(
+        holder.itemView.setBackgroundDrawable(App.inst().getResources().getDrawable(
                 item.isCompleted() ? R.drawable.list_completed_touch_feedback : R.drawable.touch_feedback));
 
         holder.completeCB.setOnClickListener(v -> {
@@ -68,7 +68,7 @@ public class TasksAdapter extends ChangeAwareAdapter<TasksAdapter.ViewHolder> {
             int betterPosition = holder.getAdapterPosition();
             if (betterPosition != NO_POSITION) {
                 currentTaskModel.loadTask(taskListModel.get(betterPosition).getEntityId());
-                TaskDetailActivity.start(App.instance());
+                TaskDetailActivity.start(App.inst());
             }
         });
     }

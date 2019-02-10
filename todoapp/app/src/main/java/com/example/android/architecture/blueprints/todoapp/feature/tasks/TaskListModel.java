@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import co.early.fore.adapters.DiffCalculator;
 import co.early.fore.adapters.DiffSpec;
 import co.early.fore.adapters.Diffable;
@@ -42,7 +45,7 @@ import static com.example.android.architecture.blueprints.todoapp.feature.tasks.
  * data so that nothing gets out of sync. i.e. any changes go directly to the database and come
  * back later on the UI thread as a result of a db refresh.
  * <p>
- * For performance reasons we avoid unnecessary db refreshes using refreshStatus to drop calls
+ * For performance reasons we avoid unnecessary db refreshes using RefreshStatus to drop calls
  * where we can - this is only really necessary for extreme situations where you may be updating
  * large amounts of data continuously, but it's here for completeness none the less.
  * <p>
@@ -52,6 +55,7 @@ import static com.example.android.architecture.blueprints.todoapp.feature.tasks.
  * anyway.
  * <p>
  */
+@Singleton
 public class TaskListModel extends ObservableImp implements Diffable {
 
     public static final String LOG_TAG = TaskListModel.class.getSimpleName();
@@ -131,10 +135,12 @@ public class TaskListModel extends ObservableImp implements Diffable {
     private volatile Filter filter = Filter.ALL;
 
 
-    // This helps performance, but it won't be necessary until you get to
-    // updating your db multiple times a second with a db larger than a few thousand items,
-    // if you want a super simple but slightly less performant implementation, just delete all
-    // the references to RefreshStatus
+    /**
+     * This helps performance, but it won't be necessary until you get to
+     * updating your db multiple times a second with a db larger than a few thousand items,
+     * if you want a super simple but slightly less performant implementation, just delete all
+     * the references to RefreshStatus in this class
+     */
     enum RefreshStatus {
         IDLE,
         REQUESTED,
@@ -144,7 +150,7 @@ public class TaskListModel extends ObservableImp implements Diffable {
 
     private volatile RefreshStatus refreshStatus = IDLE;
 
-
+    @Inject
     public TaskListModel(TaskItemDatabase taskItemDatabase, Logger logger, SystemTimeWrapper systemTimeWrapper, WorkMode workMode) {
         super(workMode);
 

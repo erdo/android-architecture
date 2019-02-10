@@ -44,7 +44,7 @@ public class InterceptorMock implements Interceptor {
         Affirm.notNull(fileName);
         Affirm.notNull(charset);
 
-        try (InputStream is = App.instance().getAssets().open(fileName);
+        try (InputStream is = App.inst().getAssets().open(fileName);
              InputStreamReader isw = new InputStreamReader(is, charset);
              BufferedReader br = new BufferedReader(isw)){
 

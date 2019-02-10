@@ -2,8 +2,6 @@ package com.example.android.architecture.blueprints.todoapp;
 
 import android.app.Application;
 
-import co.early.fore.core.Affirm;
-import co.early.fore.core.WorkMode;
 
 /**
  * Try not to fill your own version of this class with lots of code, if possible move
@@ -11,35 +9,28 @@ import co.early.fore.core.WorkMode;
  */
 public class App extends Application {
 
-    private static App instance;
-    private static ObjectGraph objectGraph;
+    private static App inst;
+    private AppComponent appComponent;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        instance = this;
-
-        if (objectGraph == null) {
-            objectGraph = new ObjectGraph();
-        }
-        objectGraph.setApplication(this);
+        inst = this;
+        appComponent = DaggerAppComponent.builder().appModule(new AppModule(this)).build();
     }
 
-    public static App instance() {
-        return instance;
+    public void injectTestAppModule(AppModule testAppModule) {
+        appComponent = DaggerAppComponent.builder().appModule(testAppModule).build();
     }
 
-
-    public void injectSynchronousObjectGraph() {
-        objectGraph = new ObjectGraph();
-        objectGraph.setApplication(this, WorkMode.SYNCHRONOUS);
+    public static App inst() {
+        return inst;
     }
 
-    public <T> void injectMockObject(Class<T> clazz, T object) {
-        objectGraph.putMock(clazz, object);
+    public AppComponent getAppComponent() {
+        return appComponent;
     }
-
 
     /**
      * To prevent initialisation stuff happening before we have had a chance to set our mocks
@@ -49,32 +40,7 @@ public class App extends Application {
      *
      */
     public static void init() {
-        if (objectGraph != null) {
-            objectGraph.init();
-        }
-    }
-
-    /**
-     * This is how dependencies get injected, typically an Activity/Fragment/View will call this
-     * during the onCreate()/onCreateView()/onFinishInflate() method respectively for each of the
-     * dependencies it needs.
-     * <p/>
-     * Can use the dagger library for similar behaviour using annotations
-     * <p/>
-     * Will return mocks if they have been injected previously in injectMockObject()
-     * <p/>
-     * Call it like this: </br> YourModel yourModel =
-     * CustomApp.get(YourModel.class);
-     * <p>
-     * If you want to more tightly scoped object, pass a factory class here and create an instance
-     * where you need it
-     *
-     * @param s
-     * @return
-     */
-    public static <T> T get(Class<T> s) {
-        Affirm.notNull(objectGraph);
-        return objectGraph.get(s);
+        // run any initialisation code here
     }
 
 }

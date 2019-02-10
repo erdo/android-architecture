@@ -7,6 +7,9 @@ import com.example.android.architecture.blueprints.todoapp.message.UserMessage;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import co.early.fore.core.Affirm;
 import co.early.fore.core.WorkMode;
 import co.early.fore.core.callbacks.FailureCallbackWithPayload;
@@ -22,6 +25,7 @@ import co.early.fore.retrofit.CallProcessor;
  * This app doesn't handle full synchronization with data on a server, local
  * changes are not pushed to the internet for example.
  */
+@Singleton
 public class TaskFetcher extends ObservableImp {
 
     public static final String LOG_TAG = TaskFetcher.class.getSimpleName();
@@ -36,6 +40,7 @@ public class TaskFetcher extends ObservableImp {
 
     private int connections;
 
+    @Inject
     public TaskFetcher(TaskListModel taskListModel, TaskItemService service, CallProcessor<UserMessage> callProcessor,
                        SystemTimeWrapper systemTimeWrapper, Logger logger, WorkMode workMode) {
         super(workMode);

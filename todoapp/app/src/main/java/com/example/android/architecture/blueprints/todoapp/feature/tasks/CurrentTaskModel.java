@@ -2,6 +2,9 @@ package com.example.android.architecture.blueprints.todoapp.feature.tasks;
 
 import android.support.annotation.Nullable;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import co.early.fore.core.Affirm;
 import co.early.fore.core.WorkMode;
 import co.early.fore.core.logging.Logger;
@@ -11,6 +14,7 @@ import co.early.fore.core.time.SystemTimeWrapper;
 /**
  *  Holds the current task for things like editing, viewing the detail
  */
+@Singleton
 public class CurrentTaskModel extends ObservableImp {
 
     private static final String TAG = CurrentTaskModel.class.getSimpleName();
@@ -23,7 +27,7 @@ public class CurrentTaskModel extends ObservableImp {
     private TaskItem currentItem;
     private boolean loading = false;
 
-
+    @Inject
     public CurrentTaskModel(TaskListModel taskListModel, SystemTimeWrapper systemTimeWrapper, Logger logger, WorkMode notificationMode) {
         super(notificationMode);
         this.taskListModel = Affirm.notNull(taskListModel);

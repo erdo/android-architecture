@@ -82,8 +82,8 @@ public class TasksActivity extends BaseActivity {
     }
 
     private void setupModelReferences(){
-        taskListModel = App.get(TaskListModel.class);
-        taskFetcher = App.get(TaskFetcher.class);
+        taskListModel = App.inst().getAppComponent().getTaskListModel();
+        taskFetcher = App.inst().getAppComponent().getTaskFetcher();
     }
 
     @Override

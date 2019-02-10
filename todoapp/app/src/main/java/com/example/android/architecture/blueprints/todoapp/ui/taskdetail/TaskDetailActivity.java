@@ -78,7 +78,7 @@ public class TaskDetailActivity extends BaseActivity {
     }
 
     private void setupModelReferences(){
-        currentTaskModel = App.get(CurrentTaskModel.class);
+        currentTaskModel = App.inst().getAppComponent().getCurrentTaskModel();
     }
 
     @Override

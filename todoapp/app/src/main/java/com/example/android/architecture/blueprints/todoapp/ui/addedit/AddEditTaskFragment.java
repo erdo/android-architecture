@@ -89,7 +89,7 @@ public class AddEditTaskFragment extends Fragment implements SyncableView {
     }
 
     private void setupModelReferences(){
-        currentTaskModel = App.get(CurrentTaskModel.class);
+        currentTaskModel = App.inst().getAppComponent().getCurrentTaskModel();
     }
 
     private View setupUiReferences(LayoutInflater inflater, ViewGroup container) {

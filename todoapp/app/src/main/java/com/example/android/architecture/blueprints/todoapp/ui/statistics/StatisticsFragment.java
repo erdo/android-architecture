@@ -68,8 +68,8 @@ public class StatisticsFragment extends Fragment implements SyncableView {
     }
 
     private void setupModelReferences(){
-        taskFetcher = App.get(TaskFetcher.class);
-        taskListModel = App.get(TaskListModel.class);
+        taskListModel = App.inst().getAppComponent().getTaskListModel();
+        taskFetcher = App.inst().getAppComponent().getTaskFetcher();
     }
 
     private View setupUiReferences(LayoutInflater inflater, ViewGroup container) {
