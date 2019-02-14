@@ -54,13 +54,13 @@ public class TasksFragment extends Fragment implements SyncableView {
     private CurrentTaskModel currentTaskModel;
 
     //UI elements
-    private TasksAdapter mListAdapter;
-    private View mNoTasksView;
-    private ImageView mNoTaskIcon;
-    private TextView mNoTaskMainView;
-    private TextView mNoTaskAddView;
-    private LinearLayout mTasksView;
-    private TextView mFilteringLabelView;
+    private TasksAdapter listAdapter;
+    private View noTasksView;
+    private ImageView noTaskIcon;
+    private TextView noTaskMsg;
+    private TextView noTaskAddView;
+    private LinearLayout tasksView;
+    private TextView filteringLabelView;
     private RecyclerView listView;
     private FloatingActionButton fab;
     private ScrollChildSwipeRefreshLayout swipeRefreshLayout;
@@ -102,14 +102,14 @@ public class TasksFragment extends Fragment implements SyncableView {
 
         // Set up tasks view
         listView = root.findViewById(R.id.tasks_list);
-        mFilteringLabelView = root.findViewById(R.id.filteringLabel);
-        mTasksView = root.findViewById(R.id.tasksLL);
+        filteringLabelView = root.findViewById(R.id.filteringLabel);
+        tasksView = root.findViewById(R.id.tasksLL);
 
         // Set up  no tasks view
-        mNoTasksView = root.findViewById(R.id.noTasks);
-        mNoTaskIcon = root.findViewById(R.id.noTasksIcon);
-        mNoTaskMainView = root.findViewById(R.id.noTasksMain);
-        mNoTaskAddView = root.findViewById(R.id.noTasksAdd);
+        noTasksView = root.findViewById(R.id.noTasks);
+        noTaskIcon = root.findViewById(R.id.noTasksIcon);
+        noTaskMsg = root.findViewById(R.id.noTasksMsg);
+        noTaskAddView = root.findViewById(R.id.noTasksAdd);
 
         // Set up floating action button
         fab = getActivity().findViewById(R.id.fab_add_task);
@@ -129,7 +129,7 @@ public class TasksFragment extends Fragment implements SyncableView {
 
     private void setupAdapter(){
 
-        mListAdapter = new TasksAdapter(taskListModel, currentTaskModel, new TasksAdapter.TaskActionsCallBack() {
+        listAdapter = new TasksAdapter(taskListModel, currentTaskModel, new TasksAdapter.TaskActionsCallBack() {
             @Override
             public void taskMarkedComplete() {
                 ((TasksActivity)getContext()).showMessage(getString(R.string.task_marked_complete));
@@ -144,12 +144,12 @@ public class TasksFragment extends Fragment implements SyncableView {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         linearLayoutManager.setOrientation(RecyclerView.VERTICAL);
         listView.setLayoutManager(linearLayoutManager);
-        listView.setAdapter(mListAdapter);
+        listView.setAdapter(listAdapter);
     }
 
     private void setupClickListeners(){
 
-        mNoTaskAddView.setOnClickListener(v -> {
+        noTaskAddView.setOnClickListener(v -> {
             currentTaskModel.createNewEmptyTask();
             AddEditTaskActivity.startAddActivityForResult(getActivity());
         });
@@ -161,7 +161,11 @@ public class TasksFragment extends Fragment implements SyncableView {
 
         swipeRefreshLayout.setOnRefreshListener(() -> taskFetcher.fetchTaskItems(
                 () -> {},//success is no op, but maybe you would want to move to another activity etc (observers handle UI updates)
-                failureMessage -> ((BaseActivity)getContext()).showMessage(failureMessage.getString(getResources()))));
+                failureMessage -> {
+                    if (getContext() != null) {
+                        ((BaseActivity) getContext()).showMessage(failureMessage.getString(getResources()));
+                    }
+                }));
     }
 
     //below makes the UI reactive
@@ -184,16 +188,16 @@ public class TasksFragment extends Fragment implements SyncableView {
     @Override
     public void syncView() {
 
-        mTasksView.setVisibility(taskListModel.hasVisibleTasks() ? View.VISIBLE :View.GONE);
+        tasksView.setVisibility(taskListModel.hasVisibleTasks() ? View.VISIBLE :View.GONE);
 
-        mNoTasksView.setVisibility(taskListModel.hasVisibleTasks() ? View.GONE :View.VISIBLE);
-        mNoTaskMainView.setText(taskListModel.getCurrentFilter().noTasksStringResId);
-        mNoTaskIcon.setImageDrawable(getResources().getDrawable(taskListModel.getCurrentFilter().noTasksDrawableResId));
-        mNoTaskAddView.setVisibility(taskListModel.hasVisibleTasks() ? View.GONE : View.VISIBLE);
+        noTasksView.setVisibility(taskListModel.hasVisibleTasks() ? View.GONE :View.VISIBLE);
+        noTaskMsg.setText(taskListModel.getCurrentFilter().noTasksStringResId);
+        noTaskIcon.setImageDrawable(getResources().getDrawable(taskListModel.getCurrentFilter().noTasksDrawableResId));
+        noTaskAddView.setVisibility(taskListModel.hasVisibleTasks() ? View.GONE : View.VISIBLE);
 
-        mFilteringLabelView.setText(getResources().getString(taskListModel.getCurrentFilter().labelStringResId));
+        filteringLabelView.setText(getResources().getString(taskListModel.getCurrentFilter().labelStringResId));
         swipeRefreshLayout.setRefreshing(taskFetcher.isBusy());
 
-        mListAdapter.notifyDataSetChanged();
+        listAdapter.notifyDataSetChanged();
     }
 }

@@ -30,7 +30,7 @@ public class BaseActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        App.init();
+        App.inst().init();
         super.onCreate(savedInstanceState);
     }
 

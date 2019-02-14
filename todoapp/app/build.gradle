@@ -9,7 +9,6 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-
     defaultConfig {
         applicationId "com.example.android.architecture.blueprints.todomvo"
         minSdkVersion rootProject.ext.minSdkVersion

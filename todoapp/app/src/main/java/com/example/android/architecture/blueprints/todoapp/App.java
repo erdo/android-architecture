@@ -11,6 +11,7 @@ public class App extends Application {
 
     private static App inst;
     private AppComponent appComponent;
+    private volatile boolean initialized = false;
 
     @Override
     public void onCreate() {
@@ -39,8 +40,12 @@ public class App extends Application {
      * http://stackoverflow.com/questions/4969553/how-to-prevent-activityunittestcase-from-calling-application-oncreate
      *
      */
-    public static void init() {
+    public void init() {
         // run any initialisation code here
+        if (!initialized) {
+            initialized = true;
+            inst().appComponent.getTaskListModel().fetchLatestFromDb();
+        }
     }
 
 }

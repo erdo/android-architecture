@@ -16,19 +16,19 @@
 
 package com.example.android.architecture.blueprints.todoapp.tasks;
 
-import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.LargeTest;
 import android.support.test.filters.SdkSuppress;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
-import android.support.test.filters.LargeTest;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ListView;
 
-import com.example.android.architecture.blueprints.todoapp.Injection;
+import com.example.android.architecture.blueprints.todoapp.App;
 import com.example.android.architecture.blueprints.todoapp.R;
 import com.example.android.architecture.blueprints.todoapp.TestUtils;
-import com.example.android.architecture.blueprints.todoapp.data.source.TasksDataSource;
+import com.example.android.architecture.blueprints.todoapp.feature.tasks.TaskListModel;
+import com.example.android.architecture.blueprints.todoapp.ui.tasks.TasksActivity;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -84,14 +84,13 @@ public class TasksScreenTest {
 
                 /**
                  * To avoid a long list of tasks and the need to scroll through the list to find a
-                 * task, we call {@link TasksDataSource#deleteAllTasks()} before each test.
+                 * task, we call {@link TaskListModel#clear()} before each test.
                  */
                 @Override
                 protected void beforeActivityLaunched() {
                     super.beforeActivityLaunched();
                     // Doing this in @Before generates a race condition.
-                    Injection.provideTasksRepository(InstrumentationRegistry.getTargetContext())
-                        .deleteAllTasks();
+                    App.inst().getAppComponent().getTaskListModel().clear();
                 }
             };
 

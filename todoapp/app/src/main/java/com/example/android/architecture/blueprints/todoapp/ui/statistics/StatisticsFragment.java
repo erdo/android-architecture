@@ -92,7 +92,11 @@ public class StatisticsFragment extends Fragment implements SyncableView {
         swipeRefreshLayout.setOnRefreshListener(() -> taskFetcher.fetchTaskItems(
                 () -> {
                 },//success is no op, but maybe you would want to move to another activity etc (observers handle UI updates)
-                failureMessage -> ((BaseActivity)getContext()).showMessage(failureMessage.getString(getResources()))));
+                failureMessage -> {
+                    if (getContext() != null) {
+                        ((BaseActivity) getContext()).showMessage(failureMessage.getString(getResources()));
+                    }
+                }));
     }
 
     @Override

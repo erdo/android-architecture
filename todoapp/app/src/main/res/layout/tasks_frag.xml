@@ -65,7 +65,7 @@
                 android:src="@drawable/ic_assignment_turned_in_24dp" />
 
             <TextView
-                android:id="@+id/noTasksMain"
+                android:id="@+id/noTasksMsg"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"

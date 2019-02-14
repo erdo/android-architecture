@@ -24,6 +24,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.view.Gravity;
 
 import com.example.android.architecture.blueprints.todoapp.R;
+import com.example.android.architecture.blueprints.todoapp.ui.tasks.TasksActivity;
 
 import org.junit.Rule;
 import org.junit.Test;
