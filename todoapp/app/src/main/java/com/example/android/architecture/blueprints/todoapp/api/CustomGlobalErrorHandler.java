@@ -23,7 +23,7 @@ import static com.example.android.architecture.blueprints.todoapp.message.UserMe
 
 /**
  * You can probably use this class almost as it is for your own app, but you might want to
- * customise the behaviour for specific HTTP codes etc, hence it's not in the asaf library
+ * customise the behaviour for specific HTTP codes etc, hence it's not in the fore library
  */
 public class CustomGlobalErrorHandler implements ErrorHandler<UserMessage> {
 
@@ -56,7 +56,7 @@ public class CustomGlobalErrorHandler implements ErrorHandler<UserMessage> {
                     message = ERROR_CLIENT;
                     break;
 
-                case 404://realise this is officially a "client" error, but in my experience this is usually the fault of the server ;)
+                case 404://realise this is officially a "client" error, but in my experience, if it happens in a prod app, this is usually the fault of the server ;)
                 case 500:
                 case 503:
                     message = ERROR_SERVER;

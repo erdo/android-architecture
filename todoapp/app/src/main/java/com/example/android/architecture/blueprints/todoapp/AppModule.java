@@ -28,8 +28,8 @@ import retrofit2.Retrofit;
 @Module
 public class AppModule {
 
-    private final Application app;
-    private final static String TAG = AppModule.class.getSimpleName();
+    protected final Application app;
+    private final static String LOG_TAG = AppModule.class.getSimpleName();
 
     public AppModule(Application app) {
         this.app = Affirm.notNull(app);
@@ -52,17 +52,12 @@ public class AppModule {
         return WorkMode.ASYNCHRONOUS;
     }
 
-    @Provides
-    @Singleton
-    public Logger provideLogger(AndroidLogger androidLogger) {
-        return androidLogger;
-    }
 
     @Provides
     @Singleton
-    public AndroidLogger provideAndroidLogger() {
+    public Logger provideLogger() {
         AndroidLogger androidLogger = new AndroidLogger("todo-mvo_");
-        androidLogger.i(TAG, "created logger");
+        androidLogger.i(LOG_TAG, "created logger");
         return androidLogger;
     }
 
@@ -91,7 +86,7 @@ public class AppModule {
     @Provides
     @Singleton
     public Retrofit provideRetrofit(Logger logger) {
-        logger.i(TAG, "provideRetrofit()");
+        logger.i(LOG_TAG, "provideRetrofit()");
         return CustomRetrofitBuilder.create(
                 new CustomGlobalRequestInterceptor(logger),
                 new InterceptorLogging(logger));//logging interceptor should be the last one
@@ -100,7 +95,7 @@ public class AppModule {
     @Provides
     @Singleton
     public CallProcessor<UserMessage> provideCallProcessor(Logger logger) {
-        logger.i(TAG, "provideCallProcessor()");
+        logger.i(LOG_TAG, "provideCallProcessor()");
         return new CallProcessor<UserMessage>(new CustomGlobalErrorHandler(logger), logger);
     }
 

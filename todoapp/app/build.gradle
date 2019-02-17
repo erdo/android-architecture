@@ -21,7 +21,7 @@ android {
 
     buildTypes {
         debug {
-            minifyEnabled true
+            minifyEnabled false
             useProguard false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguardTest-rules.pro'
@@ -39,9 +39,9 @@ android {
 
     // If you need to add more flavors, consider using flavor dimensions.
     productFlavors {
-        mock {
+        dev {
             dimension "default"
-            applicationIdSuffix = ".mock"
+            applicationIdSuffix = ".dev"
         }
         prod {
             dimension "default"
@@ -51,7 +51,7 @@ android {
     // Remove mockRelease as it's not needed.
     android.variantFilter { variant ->
         if (variant.buildType.name == 'release'
-                && variant.getFlavors().get(0).name == 'mock') {
+                && variant.getFlavors().get(0).name == 'dev') {
             variant.setIgnore(true)
         }
     }
@@ -95,11 +95,13 @@ dependencies {
     testImplementation "junit:junit:$rootProject.ext.junitVersion"
     testImplementation "org.mockito:mockito-all:$rootProject.ext.mockitoVersion"
     testImplementation "org.hamcrest:hamcrest-all:$rootProject.ext.hamcrestVersion"
+    testImplementation("org.robolectric:robolectric:$rootProject.ext.robolectricVersion") {
+        exclude module: 'maven-artifact'
+    }
 
     // Android Testing Support Library's runner and rules
     androidTestImplementation "com.android.support.test:runner:$rootProject.ext.runnerVersion"
     androidTestImplementation "com.android.support.test:rules:$rootProject.ext.rulesVersion"
-
     androidTestImplementation "android.arch.persistence.room:testing:$rootProject.roomVersion"
 
     // Dependencies for Android unit tests

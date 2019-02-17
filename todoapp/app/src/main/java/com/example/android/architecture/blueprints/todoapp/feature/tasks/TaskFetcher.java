@@ -38,7 +38,7 @@ public class TaskFetcher extends ObservableImp {
     private final WorkMode workMode;
     private final Logger logger;
 
-    private int connections;
+    private boolean busy;
 
     @Inject
     public TaskFetcher(TaskListModel taskListModel, TaskItemService service, CallProcessor<UserMessage> callProcessor,
@@ -59,14 +59,17 @@ public class TaskFetcher extends ObservableImp {
         Affirm.notNull(successCallback);
         Affirm.notNull(failureCallbackWithPayload);
 
-        if (connections>8){
+        if (busy){
             failureCallbackWithPayload.fail(UserMessage.ERROR_BUSY);
             return;
         }
 
-        connections++;
+        busy = true;
         notifyObservers();
 
+        // if you want to parse custom errors here, please see the retrofit example in the fore docs
+        // for an easy way to support this
+        // https://github.com/erdo/android-fore/blob/master/example04retrofit/src/main/java/foo/bar/example/foreretrofit/api/fruits/FruitsCustomError.java
         callProcessor.processCall(service.getTaskItems("5s"), workMode,
                 successResponse -> handleNetworkSuccess(successCallback, successResponse),
                 failureMessage -> handleNetworkFailure(failureCallbackWithPayload, failureMessage));
@@ -96,18 +99,14 @@ public class TaskFetcher extends ObservableImp {
     }
 
     public boolean isBusy() {
-        return connections>0;
-    }
-
-    public int getConnections() {
-        return connections;
+        return busy;
     }
 
     private void complete(){
 
         logger.i(LOG_TAG, "complete()");
 
-        connections--;
+        busy = false;
         notifyObservers();
     }
 }
