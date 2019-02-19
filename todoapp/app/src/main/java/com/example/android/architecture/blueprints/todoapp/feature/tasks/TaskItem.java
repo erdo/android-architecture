@@ -3,7 +3,6 @@ package com.example.android.architecture.blueprints.todoapp.feature.tasks;
 import android.support.annotation.Nullable;
 
 import com.example.android.architecture.blueprints.todoapp.db.tasks.TaskItemEntity;
-import com.google.common.base.Strings;
 
 import co.early.fore.adapters.DiffComparator;
 import co.early.fore.core.Affirm;
@@ -52,7 +51,7 @@ public class TaskItem implements DiffComparator<TaskItem> {
 
     @Nullable
     public String getTitleForList() {
-        if (!Strings.isNullOrEmpty(taskItemEntity.getTitle())) {
+        if (taskItemEntity.getTitle() == null || taskItemEntity.getTitle().length() == 0) {
             return taskItemEntity.getTitle();
         } else {
             return taskItemEntity.getDescription();

@@ -1,400 +1,285 @@
 ---
-title: Tutorial: android fore basics
-published: true
-description: develop a basic slot machine game
-cover_image: https://thepracticaldev.s3.amazonaws.com/i/b6bgzs5na0xrag5a6b8b.png
-tags: Android, Kotlin, fore, MVO
+title: Tutorial: android architecture blueprints, full todo app (MVO edition)
+published: false
+description:  We take the Android Architecture Blueprints todo app and re-write in MVO using the fore library
+cover_image: https://thepracticaldev.s3.amazonaws.com/i/ivyftij3ctd7ee5u1146.png
+tags: Android, Java, fore, MVO
 series: android fore tutorials
 ---
 
-The [Android Architecture Blueprints](https://github.com/googlesamples/android-architecture) repo showcases different architectures by implementing the same to-do type app multiple times (once for each architecture variant).
+**[Difficulty: 4/5]**
 
-It's a great place to check how common tasks can be tackled by an architecture. (Bare in mind there is nothing particularly magical about it just because it is an official Google repo - it's written by developers like you and me: some of the code is great, some of the code is less great).
+The [Android Architecture Blueprints](https://github.com/googlesamples/android-architecture) showcase different android architectures by implementing the same to-do type app, multiple times (once for each architecture variant).
 
-In this post we are going to through another architecture into the mix: [MVO](https://erdo.github.io/android-fore/00-architecture.html#shoom) implemented with [fore](https://erdo.github.io/android-fore/).
+In this post we throw another architecture into the mix: [MVO](https://erdo.github.io/android-fore/00-architecture.html#shoom) implemented with [fore](https://erdo.github.io/android-fore/).
 
-Our fork is written in Java, it's based on the reference MVP implementation of the Android Architecture Blueprints app. It stands up pretty well in comparison with the other implementations (in fact I believe it uses less code than any of the Java implementations in that repo). A Kotlin version would be even smaller.
+![screen shots of the todo app](https://thepracticaldev.s3.amazonaws.com/i/h4tr9itybrd9zdtlo8lq.png)
+<figcaption>screen shots of the MVO todo app</figcaption>
 
-It's not a perfect comparison though: the MVO version actually has a tiny bit _more_ functionality; we handle mocking the server in a different way; and the package structure of MVO is significantly different, it focusses much more on separating the UI layer from the rest of the app. I think it does a good job of taking as much code out of the view layer as possible (as it should do, because that's the main point of **fore**).
+Our fork is written in Java, it's based on the reference MVP implementation.
+
+ - it uses **less** code that any other Java implementation (3261 lines)
+ - a Kotlin-MVO version would use even less
+ - a lot of the remaining code has been moved out of the view layer
+ - the structure of the app is arguably a lot clearer.
+
+It's not a perfect comparison though: our MVO version handles mocking the server in a different way, and we have added a basic Dagger 2 implementation for DI (though we've left a pure DI implementation class there so you can compare the two). Our MVO version actually has *_more_* functionality than the original, we support animated list changes using DiffUtil, and there is a robust networking implementation to fetch tasks from a back end (some json hosted at [mocky.io](https://www.mocky.io/)) - **despite this it still clocks in with less code**.
+
+Let's see how we did that...
+
+_(Note: there are a lot of references to **Task** in the following code, in this situation a task means a real world physical task, like a chore, or a todo item. It's got nothing to do with Android Task or AsyncTask.)_
+
+---
+
+## Original MVP package structure
+
+![original mvp package structure](https://thepracticaldev.s3.amazonaws.com/i/88w3z1nf5fh97l64emhs.png)
+<figcaption>original package structure</figcaption>
+
+The package structure of the MVP version mixes concepts slightly: **data** and **util** are self-explanatory, but **addedittask**, **statistics**, **taskdetail**, **tasks** all refer to sections of the app's UI, (they map to the add/edit screen, the statistics screen, and so on).
+
+![mvp example ui package contents](https://thepracticaldev.s3.amazonaws.com/i/98a0vz6jbxeueuke8s6u.png)
+<figcaption>view layer package contents</figcaption>
+
+Indeed, inside those UI packages we see android UI stuff like Activities, Fragments, plus the usual MVP classes: the Contract and Presenter.
+
+The overall structure makes it look as if the entire app is its UI (plus the data and a few utility methods). In terms of separating the view layer from the rest of the app, we can do a lot better than this.
+
+(_Presenters are written for the specific views they drive, but in most apps **even this small one** the views are different windows onto the same data, and a lot of what happens in presenter classes is repeated in multiple presenters. One of the things that MVO does is to move this code closer toward the application and away from specific views that might want to use it. This means it can be written and tested once, dramatically improving DRY, and still supporting multiple, thinner views, which are easier to change._)
+
+## MVO package structure
+
+![new mvo package structure](https://thepracticaldev.s3.amazonaws.com/i/s2th1unloyhmgl65ypzf.png)
+<figcaption>new package structure</figcaption>
+
+For the MVO implementation, we've split the *data* package into **api** and **db** (it's useful to keep these two separate, for instance it lets us handle minor api changes without affecting our db model too much).
+
+We'll leave the **util** package as it is - it's not central to our discussion.
+
+**message** contains our globally applicable application messages like ERROR_BUSY or ERROR_SESSION_TIMED_OUT - we don't really want anything outside of our api package to know about things like HTTP error codes or networking exceptions. The code in the api package handles the mapping between HTTP and these messages for us without letting any of the networking details leak into the rest of the app.
+
+Everything above is a good idea in my opinion, but not specific to MVO, the next two packages are what really defines an MVO structure though: **ui** and **feature**...
+
+### ui package
+![new mvo view layer packages](https://thepracticaldev.s3.amazonaws.com/i/pmpl7dkr1kqvcikikkog.png)
+<figcaption>view layer packages</figcaption>
+
+The **ui** package is where you will find the **addedit**, **statistics**, **taskdetail**, and **tasks** sub-packages which map to the screens of the app. Everything here is closely related to the UI and therefore the Android framework, code here is difficult and slow to test, so we want to make it as thin and as simple as we can. So here you'll find the Activity and Fragment classes, plus occasionally Adapters, or any other class directly related to that specific view. There are no Presenter or Contract classes required here though.
+
+### feature package
+Now for the **feature** package. If you imagine the app as existing in its own right, without reference to any specific UI, then the feature package is where the bulk of it would reside.
+
+For this small app there is only one "feature" - todo/task management, so there is only one sub-package here: **tasks**. Most commercial apps are going to have a lot more features here, typical examples would be things like: *account*, *shoppingbasket*, *favourites*, *chat*, *loyalty*, *inbox*, *playlists* etc.
+
+This is where the [models](https://erdo.github.io/android-fore/02-models.html#shoom) in [MVO](https://erdo.github.io/android-fore/00-architecture.html#shoom) live. It's the business logic of the app, and the code here should be easy to unit test: these classes should know as little as possible about Android, contexts and certainly not know anything about fragment lifecycles etc. You can refer to the [fore docs](https://erdo.github.io/android-fore/02-models.html#shoom) for complete guidelines about how to write these models - it's standard advice that also applies to writing ViewModels.
+
+---
+
+## Tasks feature
+
+![tasks feature main classes for the MVO implementation](https://thepracticaldev.s3.amazonaws.com/i/apkp48w2xpr05atjhkd2.png)
+<figcaption>tasks feature, MVO implementation</figcaption>
+
+This is a substantial re-write of the code that exists in the MVP implementation.
 
 
-Let's highlight the main points for this dev.to post (or we'll be here all day)
+### TaskItem
+
+This is the app's definition of a task.
+
+- It looks similar, but not the same as the task class in the **api** package that we deliberately called [**TaskItemPojo**](https://github.com/erdo/android-architecture/blob/todo-mvo/todoapp/app/src/main/java/com/example/android/architecture/blueprints/todoapp/api/tasks/TaskItemPojo.java) so that we don't get confused.
+
+- It looks similar, but not the same as the task class found in the **db** package that we deliberately called [**TaskItemEntity**](https://github.com/erdo/android-architecture/blob/todo-mvo/todoapp/app/src/main/java/com/example/android/architecture/blueprints/todoapp/db/tasks/TaskItemEntity.java), again so that we don't get confused.
+
+_(This might seem like a lot of effort, and you could write a single task class that satisfies all the requirements of your api, your database model, and your feature if you want - things can get complicated when you have changing requirements and apis though, so just be aware of the tradeoffs here)_
+
+Here's the rest of the feature:
+
+![tasks feature](https://thepracticaldev.s3.amazonaws.com/i/sox9itpxdxxiwuqrctgv.png)
+<figcaption>tasks feature</figcaption>
 
 
+### TaskFetcher
+
+All this does is: connect to the network, fetch tasks from a back end, and add them to local storage.
+
+A lot of the work associated with connecting to a network: parsing responses; handling errors; threading; etc is handled by fore's [CallProcessor](https://erdo.github.io/android-fore/04-more-fore.html#retrofit-and-the-callprocessor) which is a thin wrapper over Retrofit and OkHttp. We pass the downloaded tasks straight to the **TaskListModel** which handles the database work. So all we're left with in this class is a little business logic.
+
+It's **observable**, so it will let any observers know when its state has changed (e.g. when isBusy() switches back to false).
+
+The full code is [here](https://github.com/erdo/android-architecture/blob/todo-mvo/todoapp/app/src/main/java/com/example/android/architecture/blueprints/todoapp/feature/tasks/TaskFetcher.java).
 
 
+### TaskListModel
+
+This class wraps the database and takes care of all the threading so that the view layer doesn't need to worry about it. Any access to the database goes through here so that the db is transparent to the rest of the app.
+
+This class is designed to support an Android adapter so it includes public methods like **size()** and **get()**.
+
+This class is also **observable**, so any observers will be informed of any changes to the task list. As we are wrapping a Room db, we simply hook into Room's own **InvalidationTracker** for this, which is directly analogous to fore's Observers.
+
+**Animated list updates**: because we plan to animate changes to the list of tasks, we implement the Diffable interface here (that's a small helper from **fore** that let's us automate most of the complication of using DiffUtil).
+
+The full code is [here](https://github.com/erdo/android-architecture/blob/todo-mvo/todoapp/app/src/main/java/com/example/android/architecture/blueprints/todoapp/feature/tasks/TaskListModel.java).
 
 
+### CurrentTaskModel
 
- It does however represent a large amount of time and effort, and some contrifutors are doing it for free).
+This class drives any views that are related to a specific task (currently **taskdetail** and **addedit**).
 
+For this it has public methods like **setTitle()**, **getDescription()**, **saveChanges()** etc
 
-, and that means  and just because an implementation is present in the repo, doesn't mean that's the only way to do it or even that it's the best way to do it.
+As with the other models, it is written with the assumption that all the methods will be called on the same thread. Any threading is managed internally away from the view layer.
 
+And again it's observable, so that any observers know when to sync their view.
 
-  to look up how people tend to
-There are a lot of branches and I don't recommend studying each one
+---
 
-This is the MVO version written with the help of the fore library.
+## Fixing the view layer
 
+Now we're on to the easy bit! Take a look at some of the set / show methods that exist in the old view layer code:
 
-Let’s write a simple slot machine game. We’ll use the tiny [**fore**](https://erdo.github.io/android-fore/) library to demonstrate:
+``` java
+@Override
+public void setLoadingIndicator(final boolean active) {
+  if (getView() == null) {
+    return;
+  }
+  final SwipeRefreshLayout srl =
+    (SwipeRefreshLayout) getView().findViewById(R.id.refresh_layout);
 
-- a way to truly **separate your app from its UI layer**
-- a way to get rock solid **UI consistency**
-- a way to handle **asynchronous code** with no memory leaks
-
-![unlikely slot machine game](https://thepracticaldev.s3.amazonaws.com/i/2fxfrc02wlg7z3yzvgyd.png)
-<figcaption>unlikely slot machine game</figcaption>
-
-Because we’re using fore: **rotation support** and **testability** will drop out at the end automatically, and we will also be writing surprisingly little code.
-
-We’ll write this one in Kotlin, because Kotlin.
-
------
-
-_**More simple**: For even simpler examples see the fore github repo. It comes with a number of tiny app examples covering just: [reative-ui](https://erdo.github.io/android-fore/#fore-1-reactive-ui-example) basics, [asynchronous code](https://erdo.github.io/android-fore/#fore-2-asynchronous-code-example), [adapters](https://erdo.github.io/android-fore/#fore-3-adapter-example), [networking](https://erdo.github.io/android-fore/#fore-4-retrofit-example) (with Retrofit2), [animations and lifecycle](https://erdo.github.io/android-fore/#fore-5-ui-helpers-example-tic-tac-toe), and [db driven apps](https://erdo.github.io/android-fore/#fore-6-db-example-room-db-driven-to-do-list) (with Room)_
-
-_**More complicated**: A lot of architectures start to show the strain once you move beyond trivial complexity. Complexity at the UI layer is something that **fore** handles particularly well, and there is a larger more complex app code base [here](https://github.com/erdo/fore-full-example-01-kotlin) to help you investigate that_
-
------
-
-## Let’s get started
-
-![MVO](https://thepracticaldev.s3.amazonaws.com/i/nhwuewbqjn1e6rdkvwq0.png)
-
-**fore** implements the [Model View Observer](https://erdo.github.io/android-fore/00-architecture.html#shoom) architecture, we'll tackle each component in turn:
-
-## Model
-We need a model to drive our slot machine, we’re going to call it **SlotMachineModel**. It’s going to have a **spin()** method which will set the wheels spinning. The 3 wheels are going to either be spinning or showing a cherry, a dice, or a bell. (Ok so I’ve never actually played a real slot machine, sucks to be me ;p).
-
-Let’s keep it simple and have three methods called: **getState1()**, **getState2()**, **getState3()**. And they can return an enum for each wheel with one of these states: **SPINNING**, **CHERRY**, **DICE**, **BELL**
-
-We’ll also have an **isWon()** method that’s always going to return false, unless the three wheels are: **ALL** identical **AND NOT** SPINNING (eg CHERRY, CHERRY, CHERRY would be a win)
-
-To build up the suspense (and let you check rotation support for yourselves) we will do the spinning calculations *asynchronously* and we will take our time about it, by randomly adding a few seconds delay to each spin.
-
-Last but by no means least: the **Model needs to be Observable**, whenever this model’s state changes, it needs to let its observers know that it’s changed. (You might want to put your phone in landscape for the code bit if you're not at your desk)
-
-``` kotlin
-class SlotMachineModel constructor(
-        private val stateFetcher: RandomStateFetcher,
-        private val workMode: WorkMode) : ObservableImp(workMode) {
-
-    enum class State {
-        SPINNING,
-        CHERRY,
-        DICE,
-        BELL
+  // Make sure setRefreshing() is called after the layout is done with everything else.
+  srl.post(new Runnable() {
+    @Override
+    public void run() {
+      srl.setRefreshing(active);
     }
+  });
+}
 
-    private val rnd = Random()
-    private val wheel1 = Wheel(State.CHERRY)
-    private val wheel2 = Wheel(State.DICE)
-    private val wheel3 = Wheel(State.BELL)
+@Override
+public void showTasks(List<Task> tasks) {
+  mListAdapter.replaceData(tasks);
+  mTasksView.setVisibility(View.VISIBLE);
+  mNoTasksView.setVisibility(View.GONE);
+}
 
-    fun spin() {
-        spinWheel(wheel1)
-        spinWheel(wheel2)
-        spinWheel(wheel3)
-    }
-
-    private fun spinWheel(wheel: Wheel) {
-
-        //if wheel is already spinning, just ignore
-        if (wheel.state != State.SPINNING) {
-            wheel.state = State.SPINNING
-            notifyObservers()
-            AsyncBuilder<Void, State>(workMode)
-                .doInBackground {
-                    stateFetcher.fetchRandom(randomDelayMs())
-                }
-                .onPostExecute { state ->
-                    wheel.state = state; notifyObservers()
-                }
-                .execute()
-        }
-    }
-
-    fun getState1(): State {
-        return wheel1.state
-    }
-
-    fun getState2(): State {
-        return wheel2.state
-    }
-
-    fun getState3(): State {
-        return wheel3.state
-    }
-
-    fun isWon(): Boolean {
-        return (wheel1.state == wheel2.state
-                && wheel2.state == wheel3.state
-                && wheel1.state != State.SPINNING)
-    }
-
-    //anywhere between 1 and 10 seconds
-    private fun randomDelayMs(): Long {
-        return (1000
-              + rnd.nextInt(8) * 1000
-              + rnd.nextInt(1000)).toLong()
-    }
-
-    internal inner class Wheel(var state: State)
+@Override
+public void showNoActiveTasks() {
+  showNoTasksViews(
+    getResources().getString(R.string.no_tasks_active),
+    R.drawable.ic_check_circle_24dp,
+    false
+  );
 }
 
 ```
 
-That should do for our model, a few things to notice:
+Even for simple UIs, code like this can get very complicated and can cause subtle, hard to spot bugs in the UI. Here is the full list of methods needed to support just the main tasks UI:
 
-- We are calling **notifyObservers()** immediately, whenever any of our model’s state changes
-- We are passing in a **WorkMode** dependency that controls how the notifications are sent and makes things easy to test
-- Everything is designed to run on the **UI thread** apart from when we explicitly jump to a background thread to fetch the wheel states (this is where networking usually happens)
-- We’re using **fore**’s **AsyncBuilder** for that (which is just a wrapper around AsyncTask that supports lambdas). This lets us easily run the code in Synchronous mode if we want to (e.g. for tests), but you could use RxJava or coroutines for this too.
-- This Model knows nothing about android view layer classes or contexts
-- We’re also using a RandomStateFetcher dependency to fetch the actual state (nothing to do with fore, this just makes things easier to test, it’s also where you might put networking code in future, see [here](https://erdo.github.io/android-fore/#fore-4-retrofit-example) for a simple app with a networking layer)
 
-Much more information and a big checklist for writing models when you’re using fore is [here](https://erdo.github.io/android-fore/02-models.html#shoom)
+``` java
+@Override
+public void setLoadingIndicator(final boolean active) {...}
 
-## View
+@Override
+public void showTasks(List<Task> tasks) {...}
 
-We’ll write a custom view class to display our slot machine, we’re going to call it **SlotMachineView**, and it’s NOT going to be in the same package as the model.
+@Override
+public void showNoActiveTasks() {...}
 
-We can do it in a standard XML layout as follows, the root of this one happens to be RelativeLayout, so our SlotMachineView will extend that.
+@Override
+public void showNoTasks() {...}
 
-``` xml
-<?xml version="1.0" encoding="utf-8"?>
-<foo.bar.example.foreintro.ui.SlotMachineView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="@dimen/slot_spacer">
+@Override
+public void showNoCompletedTasks() {...}
 
-    <ImageView
-        android:id="@+id/slots_machine"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:layout_marginLeft="@dimen/slot_spacer"
-        android:layout_marginStart="@dimen/slot_spacer"
-        android:contentDescription="slot machine background"
-        android:scaleType="fitCenter"
-        android:src="@drawable/machine" />
+@Override
+public void showSuccessfullySavedMessage() {...}
 
-    <!-- central slot -->
+private void showNoTasksViews(String mainText, int iconRes, boolean showAddView) {...}
 
-    <foo.bar.example.foreintro.ui.widget.SlotView
-        android:id="@+id/slots_2_slotview"
-        android:layout_width="@dimen/slot_icon_size"
-        android:layout_height="@dimen/slot_icon_size"
-        android:layout_centerInParent="true"
-        android:background="@drawable/slots_dice"
-        android:contentDescription="2nd slot" />
+@Override
+public void showActiveFilterLabel() {...}
 
-    <!-- left most slot -->
+@Override
+public void showCompletedFilterLabel() {...}
 
-    <foo.bar.example.foreintro.ui.widget.SlotView
-        android:id="@+id/slots_1_slotview"
-        android:layout_width="@dimen/slot_icon_size"
-        android:layout_height="@dimen/slot_icon_size"
-        android:layout_centerVertical="true"
-        android:layout_toLeftOf="@+id/slots_2_slotview"
-        android:background="@drawable/slots_bell"
-        android:contentDescription="1st slot" />
+@Override
+public void showAllFilterLabel() {...}
 
-    <!-- right most slot -->
+@Override
+public void showAddTask() {...}
 
-    <foo.bar.example.foreintro.ui.widget.SlotView
-        android:id="@+id/slots_3_slotview"
-        android:layout_width="@dimen/slot_icon_size"
-        android:layout_height="@dimen/slot_icon_size"
-        android:layout_centerVertical="true"
-        android:layout_toRightOf="@+id/slots_2_slotview"
-        android:background="@drawable/slots_cherry"
-        android:contentDescription="3rd slot" />
+@Override
+public void showTaskDetailsUi(String taskId) {...}
 
-    <!-- slot machine handle -->
+@Override
+public void showTaskMarkedComplete() {...}
 
-    <ImageView
-        android:id="@+id/slots_handle_imageview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_toRightOf="@+id/slots_machine"
-        android:src="@drawable/slot_handle_selector" />
+@Override
+public void showTaskMarkedActive() {...}
 
-    <!-- slot machine win banner -->
+@Override
+public void showCompletedTasksCleared() {...}
 
-    <ImageView
-        android:id="@+id/slots_win"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:src="@drawable/slots_win" />
-
-</foo.bar.example.foreintro.ui.SlotMachineView>
+@Override
+public void showLoadingTasksError() {...}
 ```
-Our custom view is going to handle the following standard things:
 
-- get a **reference to all the view elements** we need
-- get a reference to the **SlotMachineModel** which will inform what state is displayed on the UI
-- hook up the **button listeners** so that they interact with the model
-- **sync our view** so that it matches the state of the SlotMachineModel (set all the SlotView backgrounds, and the win banner each time the model notifies us that it’s changed)
+The MVO syncView() convention is about to let us delete all of these methods. Everything above can be written as:
 
-``` kotlin
-class SlotMachineView @JvmOverloads constructor(
-        context: Context?,
-        attrs: AttributeSet? = null,
-        defStyleAttr: Int = 0,
-        defStyleRes: Int = 0) :
-        RelativeLayout(context, attrs, defStyleAttr), SyncableView {
+``` java
+@Override
+public void syncView() {
+  tasksView.setVisibility(taskListModel.hasVisibleTasks() ? View.VISIBLE :View.GONE);
 
+  noTasksView.setVisibility(taskListModel.hasVisibleTasks() ? View.GONE :View.VISIBLE);
+  noTaskMsg.setText(taskListModel.getCurrentFilter().noTasksStringResId);
+  noTaskIcon.setImageDrawable(getResources().getDrawable(taskListModel.getCurrentFilter().noTasksDrawableResId));
+  noTaskAddView.setVisibility(taskListModel.hasVisibleTasks() ? View.GONE : View.VISIBLE);
+  filteringLabelView.setText(getResources().getString(taskListModel.getCurrentFilter().labelStringResId));
+  swipeRefreshLayout.setRefreshing(taskFetcher.isBusy());
 
-    //models that we need
-    private lateinit var slotMachineModel: SlotMachineModel
-
-    //single observer reference
-    internal var observer = this::syncView
-
-
-    override fun onFinishInflate() {
-        super.onFinishInflate()
-
-        //(getting view references is handled for us by kotlin tools)
-
-        getModelReferences()
-
-        setClickListeners()
-    }
-
-
-    private fun getModelReferences() {
-        slotMachineModel = App.get(SlotMachineModel::class.java)
-    }
-
-    private fun setClickListeners() {
-        slots_handle.setOnClickListener { slotMachineModel.spin() }
-    }
-
-
-    //fore data binding stuff below
-
-    override fun syncView() {
-        slots_1_slotview.setState(slotMachineModel.getState1())
-        slots_2_slotview.setState(slotMachineModel.getState2())
-        slots_3_slotview.setState(slotMachineModel.getState3())
-        slots_win.visibility = if (slotMachineModel.isWon())
-                               View.VISIBLE else View.INVISIBLE
-    }
-
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        slotMachineModel.addObserver(observer)
-        syncView() //  <- don't forget this
-    }
-
-    override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
-        slotMachineModel.removeObserver(observer)
-    }
+  listAdapter.notifyDataSetChangedAuto();
 }
 ```
 
-By the way, that syncView() method is surprisingly powerful as long as you stick to 2 rules when you write it:
+By the time we have done all the views, we have removed a lot of unnecessary code.
 
--If a model being observed changes **in any way**, then the **entire** view is refreshed.
--Where there is an **if**, there must also be an **else**
+The power of the syncView() convention is discussed at length [here](https://erdo.github.io/android-fore/03-reactive-uis.html#syncview). If you're familiar with MVI, it has similar purpose to the render() function.
 
-That’s explained in [detail here](https://erdo.github.io/android-fore/03-reactive-uis.html#syncview)
+### Animated list changes
 
-## Observer
+Did you spot the **notifyDataSetChangedAuto()**? (rather than the more usual notifyDataSetChanged()) - this is fore's way of supporting animated list changes, in this case it's backed by Android's DiffUtil but there is another more performant version that you can use for a simple in memory list demonstrated [here](https://erdo.github.io/android-fore/#fore-3-adapter-example). Either way it's a simple call to notifyDataSetChangedAuto() from within your syncView().
 
-This is the last part of implementing MVO, and we’ve kind of already done it.
+_At this point you might be thinking that **fore** must be some huge complicated library to support all this, actually it's [tiny](https://erdo.github.io/android-fore/#method-counts). A lot of the power comes from the MVO concept itself._
 
-All the **Model** needed to do to become observable was to extend **fore**’s **ObservableImp** *(or to implement the Observable interface)* and to make sure to call **notifyObservers()** each time any of the state changed.
+### Rotation support
 
-For the **View**, all it had to do to observe the Model was to **add** and **remove** its Observable in line with the Android lifecycle methods, and to call **syncView()** whenever the model notified it of a change.
+![gif showing the app rotating](https://thepracticaldev.s3.amazonaws.com/i/vfb6sq68yym50ihvgheo.gif)
+<figcaption>rotation support as standard</figcaption>
 
-Threading issues are taken care of here as everything operates on the UI thread (including the observer notifications) which is exactly how you need UI code to be run anyway. Asynchronous code is run away from the UI layer, inside the model and is completed before the lightweight notifications are fired in the UI thread (this is also how **fore** is able to support [adapters](https://erdo.github.io/android-fore/04-more-fore.html#adapters-notifydatasetchangedauto) in a very similar manner).
+It wouldn't be MVO if **rotation support** and **testability** didn't come as standard.
 
-We didn’t mention [DI](https://erdo.github.io/android-fore/05-extras.html#dependency-injection-basics) yet, but it’s key. The line you see in the View:
-
-``` kotlin
-slotMachineModel = App.get(SlotMachineModel::class.java)
-```
-provides the view with the same instance of the model each time, so that everything remains consistent, even when you rotate the screen. You might use Dagger2 for that, the example here uses a pure DI solution.
-
-![automatically supports rotation](https://thepracticaldev.s3.amazonaws.com/i/0s05vx6ror703z1h074x.gif)
-<figcaption>as promised… this already supports rotation</figcaption>
-
-For completeness and so that you can see how tiny it is, this is the [activity code](https://github.com/erdo/fore-intro-tutorial/blob/master/app/src/main/java/foo/bar/example/foreintro/ui/MainActivity.kt) we use to launch the view
+---
 
 ## Testing
 
-Because there is so much separation between the view layer and the rest of the app, this code is particularly testable. The main [fore repo](https://erdo.github.io/android-fore/) has a lot of sample apps, many of which are tested extensively if want to study test examples.
+Some of the original tests work with no changes necessary, some have been tweaked, and others have had to be re-written. The testing for the MVO app is slightly more focussed on the feature package and uses plain JUnit tests. But there are still plenty of Android UI tests though (for these we use a Dagger2 TestAppModule to mock the models driving the view layer - but a PureDI solution would work just as well)
 
-## Now for the really cool stuff…
+---
 
-This is a simple example: one view observing one model, sooooo what.
+## Things we haven't really improved...
 
-But there’s something clever in that very basic looking observer code. It has no parameter. This means that if your view suddenly needs to observe not just a **SlotMachineModel**, but also a **UserRepository**, or an **AccountModel**, or **NetworkStatusModel**, **ChatInboxModel**, **WeatherModel**— or all 6 models at the same time. It can. Easily. The observer interface is identical for all the models, so all a view needs to do is to get hold of a reference to the models using DI, and then:
+Our view layer now looks much thinner, but we still need quite a bit of boiler plate in the activity classes to support things like the ActionBar, NavigationView, PopUpMenu and handling the options menu. That's just how Android has been designed unfortunately - there is a limit to how much we can avoid these native classes and the boiler plate that comes with them.
 
-``` kotlin
-override fun onAttachedToWindow() {
-    super.onAttachedToWindow()
-    slotMachineModel.addObserver(observer)
-    userRepository.addObserver(observer)
-    accountModel.addObserver(observer)
-    networkStatusModel.addObserver(observer)
-    chatInboxModel.addObserver(observer)
-    weatherModel.addObserver(observer)
-    syncView() //  <- don't forget this
-}
+Single Activity apps and Google's [Navigation Component](https://developer.android.com/topic/libraries/architecture/navigation/) _may_ be offering a way out of this, or [maybe not](https://proandroiddev.com/why-i-will-not-use-architecture-navigation-component-97d2ad596b36). (If you're new to Android development, you'll quickly learn to take Google's recommendations with a pinch of salt. They are just trying to work things out, the same as the rest of us - sometimes it's helpful, sometimes less so.)
 
-override fun onDetachedFromWindow() {
-    super.onDetachedFromWindow()
-    slotMachineModel.removeObserver(observer)
-    userRepository.removeObserver(observer)
-    accountModel.removeObserver(observer)
-    networkStatusModel.removeObserver(observer)
-    chatInboxModel.removeObserver(observer)
-    weatherModel.removeObserver(observer)
-}
-```
-
-And if you have a strong objection to that level of boiler plate, there are a few [lifecycle classes](https://erdo.github.io/android-fore/04-more-fore.html#lifecycle-components) available in fore that will do it for you ;)
-
-As for the Models themselves, they don’t even know how many views might be observing them, it makes no difference to their code at all.
-
-Let’s say the view wants to: _disable the slot machine handle if the account has no money in it_. **But, we want to remain reactive and keep that enabled state correct when the balance increases or decreases, or if the phone screen rotates etc.** One line inside syncView:
-
-``` kotlin
-slots_handle.isEnabled = accountModel.balance > 0
-```
-
-Maybe the view should: _show a weather forecast text at the top of the screen_. **But again we need to keep our UI nice and reactive so that if the weather forecast changes or the phone is rotated, everything remains consistent**. One extra line in syncView:
-
-
-``` kotlin
-weather_text.text = weatherModel.getForecastText()
-```
-
-That text should probably: _be red if the windspeed is above 50mph_. **But we don't want the testers finding any UI consistency bugs when they rotate the phone, or leave the phone in a drawer for a week or whatever else it is they'll try**. One extra line in syncView:
-
-``` kotlin
-weather_text.setTextColor(resources.getColor(
-                             if (weatherModel.windSpeed>50)
-                                   R.color.red else R.color.blue))
-```
-
-This code might make things look very easy, but there are many ways to get things wrong of course, if there’s something in your app that doesn’t feel right or you’re having any performance issues - chances are you’ll find some guidance in the check list [here](https://erdo.github.io/android-fore/05-extras.html#troubleshooting--how-to-smash-code-reviews).
+The nice thing about MVO is that it removes so much code from the view layer, it's not so difficult to completely re-write that view layer (using a new navigation structure for instance) and barely have to touch the rest of the app code.
 
 -----
 
-Well thanks for reading this far!
+Thanks for reading! If you're thinking of using fore in your team, the fore docs have most of the basics covered in easy to digest sample apps, e.g. [adapters](https://erdo.github.io/android-fore/#fore-3-adapter-example), [networking](https://erdo.github.io/android-fore/#fore-4-retrofit-example) or [databases](https://erdo.github.io/android-fore/#fore-6-db-example-room-db-driven-to-do-list).
 
-Hopefully this gives you some ideas about how you could make use of the **fore** library or just **MVO** to write quicker, cleaner, more testable apps. I use it all the time during my work as it is production ready (it’s a very small library so there is not a lot to go wrong). There are lots more considerations to discuss when you look at [adapters](https://erdo.github.io/android-fore/#fore-3-adapter-example), [animations](https://erdo.github.io/android-fore/#fore-5-ui-helpers-example-tic-tac-toe), [databases](https://erdo.github.io/android-fore/#fore-6-db-example-room-db-driven-to-do-list) etc, but they are all treated in the **same standard way** using the syncView() convention. For the moment the best place to look for clear examples is in the [fore github repo](https://erdo.github.io/android-fore/).
-
-here’s the [complete code](https://github.com/erdo/fore-intro-tutorial) for the tutorial
+here’s the [complete code](https://github.com/erdo/android-architecture) for our MVO fork.

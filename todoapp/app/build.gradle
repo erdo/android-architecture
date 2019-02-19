@@ -76,7 +76,6 @@ dependencies {
     implementation "com.android.support:recyclerview-v7:$rootProject.supportLibraryVersion"
     implementation "com.android.support:support-v4:$rootProject.supportLibraryVersion"
     implementation "com.android.support.test.espresso:espresso-idling-resource:$rootProject.espressoVersion"
-    implementation "com.google.guava:guava:$rootProject.guavaVersion"
     implementation "android.arch.persistence.room:runtime:1.1.1-rc1" //db migration fails without rc version
     annotationProcessor "android.arch.persistence.room:compiler:1.1.0"
     implementation('com.squareup.retrofit2:retrofit:2.1.0') {

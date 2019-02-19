@@ -1,6 +1,6 @@
 # todo-mvo
 
-This version of the android-architecture todo app is written in the [MVO](https://erdo.github.io/android-fore/00-architecture.html#shoom) architectural style. It uses the [android-fore](https://erdo.github.io/android-fore/) library for its Observer implementation, and to save a little on boiler plate. The sample aims to:
+This version of the android-architecture todo app is written in the [MVO](https://erdo.github.io/android-fore/00-architecture.html#shoom) architectural style. It uses the [android-fore](https://erdo.github.io/android-fore/) library for its Observer implementation. The sample aims to:
 
 * Provide a basic [Model-View-Observer](https://erdo.github.io/android-fore/00-architecture.html#shoom) (MVO) implementation example.
 * Act as a reference point for comparing and contrasting the other samples in the android-architecture project.
@@ -12,16 +12,16 @@ Before exploring this sample, you might find it useful to familiarize yourself w
 
 * The [project README](https://github.com/googlesamples/android-architecture/tree/master)
 * The [MVO](https://erdo.github.io/android-fore/00-architecture.html#shoom) architecture
+* The [Dev.to tutorial](https://dev.to/erdo) which covers this implementation
 * The [fore](https://erdo.github.io/android-fore/) library documentation for further reading
 
 The todo-mvo sample uses the following dependencies:
-* [Common Android support libraries](https://developer.android.com/topic/libraries/support-library/index.html) -  Packages in the com.android.support.* namespace provide backwards compatibility and other features.
-* [Android Testing Support Library](https://developer.android.com/topic/libraries/testing-support-library/index.html) -  A framework used to support UI tests, using both Espresso, and AndroidJUnitRunner.
-* [Mockito](http://site.mockito.org/) - A mocking framework used to implement unit tests.
-* [Guava](https://github.com/google/guava) - A set of core libraries for Java by Google, commonly used in Android apps.
-* [fore](https://erdo.github.io/android-fore/) - for its basic Observer classes and various helpers
-* [Retrofit](http://square.github.io/retrofit/) - for networking code
-* [Room](https://developer.android.com/topic/libraries/architecture/room) - for database code
+
+* **fore** - for its Observer classes and various helpers
+* **Retrofit2** - for networking code
+* **Room** - for database code
+* **Dagger2** - for basic DI
+* **Mockito, JUnit, Espresso, Robolectric** - frameworks used for tests.
 
 ### Designing the app
 
@@ -31,45 +31,34 @@ All versions of the Android Blueprints app include the same common features in a
 * AddEditTask - Used to create or edit tasks.
 * Statistics - Displays statistics related to tasks.
 
-In this version of the app...
+This implementation specifics are detailed in the [dev.to article](https://dev.to/erdo)
 
-# WIP below to do....
-
-
-each screen is implemented using the following classes and interfaces:
-
-* A contract class which defines the connection between the view and the presenter.
-* An [Activity](https://developer.android.com/reference/android/app/Activity.html) which creates fragments and presenters.
-* A [Fragment](https://developer.android.com/reference/android/app/Fragment.html) which implements the view interface.
-* A presenter which implements the presenter interface in the corresponding contract.
-
-A presenter typically hosts business logic associated with a particular feature, and the corresponding view handles the Android UI work. The view contains almost no logic; it converts the presenter's commands to UI actions, and listens for user actions, which are then passed to the presenter.
-
-### Implementing the app
-
-Each version of the app implements the same features using a different approach to showcase and contrast a variety of architectural designs. For example, this version takes the following approaches to solving common implementation questions:
-
-* This sample uses [product flavors](https://developer.android.com/studio/build/build-variants.html) to replace modules at compile time, providing fake data for both manual and automated testing.
-* This version uses callbacks to handle asynchronous tasks.
-* The data is stored locally in a SQLite database, using [Room](https://developer.android.com/topic/libraries/architecture/room.html).
-
-Notice also in the following illustration that this version of the app uses fragments, and this is for two reasons:
-
-* The use of both [activities](https://developer.android.com/guide/components/activities/index.html) and [fragments](https://developer.android.com/guide/components/fragments.html) allows for a better separation of concerns which complements this implementation of MVP. In this version of the app, the Activity is the overall controller which creates and connects views and presenters.
-* The use of fragments supports tablet layouts or UI screens with multiple views.
-
-<img src="https://github.com/googlesamples/android-architecture/wiki/images/mvp.png" alt="Illustration of the MVP architecture for this version of the app."/>
-
-This version of the app includes a number of unit tests which cover presenters, repositories, and data sources. The sample also includes UI tests, that rely on fake data, and are facilitated by dependency injection to provide fake modules. For more information on using dependency injection to facilitate testing, see [Leveraging product flavors in Android Studio for hermetic testing](https://android-developers.googleblog.com/2015/12/leveraging-product-flavors-in-android.html).
-
-### Maintaining the app
-
-This sample includes classes and interfaces, such as presenters and contracts, that increase the number of lines of code compared to more traditional projects that do not make use of a particular architecture.
-
-The table below summarizes the amount of code used to implement this version of the app. You can use it as a basis for comparison with similar tables provided for each of the other samples in this project.
+The table below summarizes the amount of code used to implement this version of the app and tests. You can use it as a basis for comparison with similar tables provided for each of the other samples in this project.
 
 | Language      | Number of files | Blank lines | Comment lines | Lines of code |
 | ------------- | --------------- | ----------- | ------------- | ------------- |
-| **Java**      |               51|         1216|           1685|           3901|
-| **XML**       |               34|           97|            338|            608|
-| **Total**     |               85|         1313|           2023|           4509|
+| **Java**      |               44|         1099|            986|           3261|
+| **XML**       |               37|          105|            339|            671|
+| **JSON**      |                3|            0|              0|             21|
+| **Total**     |               84|         1204|           1325|           3953|
+
+(the app itself is 1971 lines of java code)
+
+
+
+## License
+
+
+    Copyright 2017-2019 early.co
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
