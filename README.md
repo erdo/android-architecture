@@ -11,9 +11,12 @@ This version of the android-architecture todo app is written in the [MVO](https:
 Before exploring this sample, you might find it useful to familiarize yourself with the following topics:
 
 * The [project README](https://github.com/googlesamples/android-architecture/tree/master)
+* The [Dev.to tutorial](https://dev.to/erdo/tutorial-android-architecture-blueprints-full-todo-app-mvo-edition-259o) which covers this implementation
 * The [MVO](https://erdo.github.io/android-fore/00-architecture.html#shoom) architecture
-* The [Dev.to tutorial](https://dev.to/erdo) which covers this implementation
 * The [fore](https://erdo.github.io/android-fore/) library documentation for further reading
+
+
+### Dependencies
 
 The todo-mvo sample uses the following dependencies:
 
@@ -24,10 +27,11 @@ The todo-mvo sample uses the following dependencies:
 * **Mockito, JUnit, Espresso, Robolectric** - for testing
 
 
-![mvo android architecture todo sample app](https://thepracticaldev.s3.amazonaws.com/i/vfb6sq68yym50ihvgheo.gif)
-
+**This implementation's specifics are detailed in the [dev.to article](https://dev.to/erdo/tutorial-android-architecture-blueprints-full-todo-app-mvo-edition-259o)**
 
 ### Designing the app
+
+![mvo android architecture todo sample app](https://thepracticaldev.s3.amazonaws.com/i/vfb6sq68yym50ihvgheo.gif)
 
 All versions of the Android Blueprints app include the same common features in a simple to-do type app. The app consists of four UI screens:
 * Tasks - Used to manage a list of tasks.
@@ -35,7 +39,7 @@ All versions of the Android Blueprints app include the same common features in a
 * AddEditTask - Used to create or edit tasks.
 * Statistics - Displays statistics related to tasks.
 
-This implementation specifics are detailed in the [dev.to article](https://dev.to/erdo)
+### Code metrics
 
 The table below summarizes the amount of code used to implement this version of the app and tests. You can use it as a basis for comparison with similar tables provided for each of the other samples in this project.
 
@@ -47,8 +51,6 @@ The table below summarizes the amount of code used to implement this version of 
 | **Total**     |               84|         1204|           1325|           3953|
 
 (the app itself is 1971 lines of java code)
-
-
 
 ## License
 
