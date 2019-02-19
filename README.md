@@ -27,7 +27,7 @@ The todo-mvo sample uses the following dependencies:
 * **Mockito, JUnit, Espresso, Robolectric** - for testing
 
 
-**This implementation's specifics are detailed in the [dev.to article](https://dev.to/erdo/tutorial-android-architecture-blueprints-full-todo-app-mvo-edition-259o)**
+> "This implementation's specifics are detailed in the [dev.to article](https://dev.to/erdo/tutorial-android-architecture-blueprints-full-todo-app-mvo-edition-259o)"
 
 ### Designing the app
 
