@@ -23,6 +23,10 @@ The todo-mvo sample uses the following dependencies:
 * **Dagger2** - for basic DI
 * **Mockito, JUnit, Espresso, Robolectric** - for testing
 
+
+![mvo android architecture todo sample app](https://thepracticaldev.s3.amazonaws.com/i/vfb6sq68yym50ihvgheo.gif)
+
+
 ### Designing the app
 
 All versions of the Android Blueprints app include the same common features in a simple to-do type app. The app consists of four UI screens:
