@@ -52,9 +52,9 @@ public class TaskItem implements DiffComparator<TaskItem> {
     @Nullable
     public String getTitleForList() {
         if (taskItemEntity.getTitle() == null || taskItemEntity.getTitle().length() == 0) {
-            return taskItemEntity.getTitle();
-        } else {
             return taskItemEntity.getDescription();
+        } else {
+            return taskItemEntity.getTitle();
         }
     }
 
