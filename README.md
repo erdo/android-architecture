@@ -1,5 +1,8 @@
 # todo-mvo
 
+
+_**Please see the [dev.to article](https://dev.to/erdo/tutorial-android-architecture-blueprints-full-todo-app-mvo-edition-259o) for the gull details of this implementation**_
+
 This version of the android-architecture todo app is written in the [MVO](https://erdo.github.io/android-fore/00-architecture.html#shoom) architectural style. It uses the [android-fore](https://erdo.github.io/android-fore/) library for its Observer implementation. The sample aims to:
 
 * Provide a basic [Model-View-Observer](https://erdo.github.io/android-fore/00-architecture.html#shoom) (MVO) implementation example.
@@ -26,8 +29,6 @@ The todo-mvo sample uses the following dependencies:
 * **Dagger2** - for basic DI
 * **Mockito, JUnit, Espresso, Robolectric** - for testing
 
-
-> "This implementation's specifics are detailed in the [dev.to article](https://dev.to/erdo/tutorial-android-architecture-blueprints-full-todo-app-mvo-edition-259o)"
 
 ### Designing the app
 
