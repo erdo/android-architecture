@@ -23,7 +23,6 @@ import android.support.test.filters.SdkSuppress;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.view.View;
 
 import com.example.android.architecture.blueprints.todoapp.App;
@@ -60,7 +59,6 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static co.early.fore.core.testhelpers.CountDownLatchWrapper.runInBatch;
 import static com.example.android.architecture.blueprints.todoapp.TestUtils.getCurrentActivity;
-import static com.google.common.base.Preconditions.checkArgument;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.core.IsNot.not;
 
@@ -119,7 +117,6 @@ public class TasksScreenTest {
      * @return Matcher that matches text in the given view
      */
     private Matcher<View> withItemText(final String itemText) {
-        checkArgument(!TextUtils.isEmpty(itemText), "itemText cannot be null or empty");
         return new TypeSafeMatcher<View>() {
             @Override
             public boolean matchesSafely(View item) {
