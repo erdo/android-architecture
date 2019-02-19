@@ -16,13 +16,15 @@
 
 package com.example.android.architecture.blueprints.todoapp.ui.tasks;
 
+import android.arch.core.executor.ArchTaskExecutor;
+import android.arch.core.executor.TaskExecutor;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.SdkSuppress;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.ListView;
 
 import com.example.android.architecture.blueprints.todoapp.App;
 import com.example.android.architecture.blueprints.todoapp.R;
@@ -33,6 +35,7 @@ import com.example.android.architecture.blueprints.todoapp.feature.tasks.TaskLis
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -82,32 +85,34 @@ public class TasksScreenTest {
      */
     @Rule
     public ActivityTestRule<TasksActivity> mTasksActivityTestRule =
-            new ActivityTestRule<TasksActivity>(TasksActivity.class) {
-                /**
-                 * To avoid a long list of tasks and the need to scroll through the list to find a
-                 * task, we call {@link TaskListModel#clear()} before each test.
-                 */
-                @Override
-                protected void beforeActivityLaunched() {
-                    super.beforeActivityLaunched();
-                }
-            };
+            new ActivityTestRule<TasksActivity>(TasksActivity.class, true, false);
 
     @Before
     public void setup(){
+
         App.inst().injectTestAppModule(new TestAppModule(App.inst()));
         TaskListModel taskListModel = App.inst().getAppComponent().getTaskListModel();
         runInBatch(1, taskListModel, () -> { //this makes sure Room's invalidationTracker has fired before we continue
             taskListModel.clear();
         });
+
+        setExecutorDelegate();
+
+        // Lazily start the Activity from the ActivityTestRule
+        mTasksActivityTestRule.launchActivity(null);
+    }
+
+    @After
+    public void tearDown(){
+        clearExecutorDelegate();
     }
 
     /**
-     * A custom {@link Matcher} which matches an item in a {@link ListView} by its text.
+     * A custom {@link Matcher} which matches an item in a {@link RecyclerView} by its text.
      * <p>
      * View constraints:
      * <ul>
-     * <li>View must be a child of a {@link ListView}
+     * <li>View must be a child of a {@link RecyclerView}
      * <ul>
      *
      * @param itemText the text to match
@@ -119,7 +124,7 @@ public class TasksScreenTest {
             @Override
             public boolean matchesSafely(View item) {
                 return allOf(
-                        isDescendantOfA(isAssignableFrom(ListView.class)),
+                        isDescendantOfA(isAssignableFrom(RecyclerView.class)),
                         withText(itemText)).matches(item);
             }
 
@@ -536,5 +541,30 @@ public class TasksScreenTest {
     private String getToolbarNavigationContentDescription() {
         return TestUtils.getToolbarNavigationContentDescription(
                 mTasksActivityTestRule.getActivity(), R.id.toolbar);
+    }
+
+    //we need this for UI testing, otherwise Room's InvalidationTracker fires off the UI thread
+    //can't get InstantTaskExecutorRule to work with mockito annotations properly
+    private void setExecutorDelegate(){
+        ArchTaskExecutor.getInstance().setDelegate(new TaskExecutor() {
+            @Override
+            public void executeOnDiskIO(Runnable runnable) {
+                runnable.run();
+            }
+
+            @Override
+            public void postToMainThread(Runnable runnable) {
+                runnable.run();
+            }
+
+            @Override
+            public boolean isMainThread() {
+                return true;
+            }
+        });
+    }
+
+    private void clearExecutorDelegate(){
+        ArchTaskExecutor.getInstance().setDelegate(null);
     }
 }

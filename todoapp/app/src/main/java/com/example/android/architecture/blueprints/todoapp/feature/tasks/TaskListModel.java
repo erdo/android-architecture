@@ -21,7 +21,6 @@ import co.early.fore.adapters.DiffSpec;
 import co.early.fore.adapters.Diffable;
 import co.early.fore.core.Affirm;
 import co.early.fore.core.WorkMode;
-import co.early.fore.core.callbacks.FailureCallback;
 import co.early.fore.core.callbacks.FailureCallbackWithPayload;
 import co.early.fore.core.callbacks.SuccessCallbackWithPayload;
 import co.early.fore.core.logging.Logger;
@@ -30,10 +29,6 @@ import co.early.fore.core.threading.AsyncBuilder;
 import co.early.fore.core.time.SystemTimeWrapper;
 
 import static com.example.android.architecture.blueprints.todoapp.db.tasks.TaskItemEntity.TABLE_NAME;
-import static com.example.android.architecture.blueprints.todoapp.feature.tasks.TaskListModel.RefreshStatus.ADDITIONAL_REFRESH_WAITING;
-import static com.example.android.architecture.blueprints.todoapp.feature.tasks.TaskListModel.RefreshStatus.IDLE;
-import static com.example.android.architecture.blueprints.todoapp.feature.tasks.TaskListModel.RefreshStatus.REQUESTED;
-import static com.example.android.architecture.blueprints.todoapp.feature.tasks.TaskListModel.RefreshStatus.TAKEN_DB_LIST_SNAPSHOT;
 
 
 /**
@@ -44,10 +39,6 @@ import static com.example.android.architecture.blueprints.todoapp.feature.tasks.
  * The only changes that are made to the in memory list are done via a refresh with the latest db
  * data so that nothing gets out of sync. i.e. any changes go directly to the database and come
  * back later on the UI thread as a result of a db refresh.
- * <p>
- * For performance reasons we avoid unnecessary db refreshes using RefreshStatus to drop calls
- * where we can - this is only really necessary for extreme situations where you may be updating
- * large amounts of data continuously, but it's here for completeness none the less.
  * <p>
  * As we may be getting updates here from the network or other threads, we need to synchronize access
  * to the db via the dao objects for total robustness - again if we didn't bother synchronizing here
@@ -70,12 +61,7 @@ public class TaskListModel extends ObservableImp implements Diffable {
 
     //we don't use a cursor here, so we do maintain an in memory list of the entire db
     private List<TaskItem> taskItems = new ArrayList<>();
-
-    // after about 1000 rows, DiffResult begins to get way too slow, so we forget
-    // about animating changes to the list after that
     private DiffSpec latestDiffSpec;
-    private int maxSizeForDiffUtil = 1000;
-
     private volatile int totalNumberOfTasks = 0;
     private volatile int totalNumberOfCompletedTasks = 0;
 
@@ -134,22 +120,6 @@ public class TaskListModel extends ObservableImp implements Diffable {
      */
     private volatile Filter filter = Filter.ALL;
 
-
-    /**
-     * This helps performance, but it won't be necessary until you get to
-     * updating your db multiple times a second with a db larger than a few thousand items,
-     * if you want a super simple but slightly less performant implementation, just delete all
-     * the references to RefreshStatus in this class
-     */
-    enum RefreshStatus {
-        IDLE,
-        REQUESTED,
-        TAKEN_DB_LIST_SNAPSHOT,
-        ADDITIONAL_REFRESH_WAITING
-    }
-
-    private volatile RefreshStatus refreshStatus = IDLE;
-
     @Inject
     public TaskListModel(TaskItemDatabase taskItemDatabase, Logger logger, SystemTimeWrapper systemTimeWrapper, WorkMode workMode) {
         super(workMode);
@@ -174,101 +144,65 @@ public class TaskListModel extends ObservableImp implements Diffable {
 
         logger.i(LOG_TAG, "1 fetchLatestFromDb()");
 
-        synchronized (refreshStatus) {
+        //noinspection unchecked
+        new AsyncBuilder<List<TaskItem>, Pair<List<TaskItem>, DiffUtil.DiffResult>>(workMode)
+                .doInBackground(oldList -> {
 
+                    logger.i(LOG_TAG, "2 asking for latest data");
 
-            switch (refreshStatus) {
-                case IDLE:
-                    refreshStatus = REQUESTED;
-                    break;
-                case TAKEN_DB_LIST_SNAPSHOT:
-                    //we are now committed and we need to leave this to finish before refreshing again
-                    refreshStatus = ADDITIONAL_REFRESH_WAITING;
-                case REQUESTED:
-                case ADDITIONAL_REFRESH_WAITING:
-                    //we can forget about this, it's already in hand
-                    return;
-            }
+                    synchronized (dbMonitor) {
+                        totalNumberOfTasks = taskItemDatabase.taskItemDao().getRowCount();
+                        totalNumberOfCompletedTasks = taskItemDatabase.taskItemDao().getDoneRowCount();
+                    }
 
+                    List<TaskItem> newList = new ArrayList<>();
+                    List<TaskItemEntity> dbList = new ArrayList<>();
 
-            //noinspection unchecked
-            new AsyncBuilder<List<TaskItem>, Pair<List<TaskItem>, DiffUtil.DiffResult>>(workMode)
-                    .doInBackground(oldList -> {
-
-                        logger.i(LOG_TAG, "2 asking for latest data");
-
-                        synchronized (refreshStatus) {
-                            if (refreshStatus == REQUESTED) {
-                                refreshStatus = TAKEN_DB_LIST_SNAPSHOT;
-                            }
+                    synchronized (dbMonitor) {
+                        switch (filter) {
+                            case COMPLETED:
+                                dbList = taskItemDatabase.taskItemDao().getTaskItems(true);
+                                break;
+                            case ACTIVE:
+                                dbList = taskItemDatabase.taskItemDao().getTaskItems(false);
+                                break;
+                            case ALL:
+                                dbList = taskItemDatabase.taskItemDao().getAllTaskItems();
+                                break;
                         }
+                    }
 
-                        synchronized (dbMonitor) {
-                            totalNumberOfTasks = taskItemDatabase.taskItemDao().getRowCount();
-                            totalNumberOfCompletedTasks = taskItemDatabase.taskItemDao().getDoneRowCount();
-                        }
+                    for (TaskItemEntity taskItemEntity : dbList) {
+                        newList.add(new TaskItem(taskItemEntity));
+                    }
 
-                        List<TaskItem> newList = new ArrayList<>();
-                        List<TaskItemEntity> dbList = new ArrayList<>();
+                    logger.i(LOG_TAG, "3 old list size (" + oldList[0].size() + ") new list size:(" + newList.size() + ")");
 
-                        synchronized (dbMonitor) {
-                            switch (filter) {
-                                case COMPLETED:
-                                    dbList = taskItemDatabase.taskItemDao().getTaskItems(true);
-                                    break;
-                                case ACTIVE:
-                                    dbList = taskItemDatabase.taskItemDao().getTaskItems(false);
-                                    break;
-                                case ALL:
-                                    dbList = taskItemDatabase.taskItemDao().getAllTaskItems();
-                                    break;
-                            }
-                        }
+                    // after about 1000 rows, DiffResult begins to get way too slow, so we forget
+                    // about animating changes to the list after that
+                    DiffUtil.DiffResult diffResult;
+                    if (oldList[0].size() < 1000 && newList.size() < 1000) {
+                        diffResult = new DiffCalculator<TaskItem>().createDiffResult(oldList[0], newList);
+                    } else {
+                        diffResult = null;
+                    }
 
-                        for (TaskItemEntity taskItemEntity : dbList) {
-                            newList.add(new TaskItem(taskItemEntity));
-                        }
+                    //hop back to the UI thread to update the UI
+                    return new Pair<>(newList, diffResult);
+                })
+                .onPostExecute(payload -> {
 
-                        logger.i(LOG_TAG, "3 old list size (" + oldList[0].size() + ") new list size:(" + newList.size() + ")");
+                    logger.i(LOG_TAG, "4 updating in memory copy");
 
-                        // work out the differences in the lists
-                        DiffUtil.DiffResult diffResult;
-                        if (oldList[0].size() < maxSizeForDiffUtil && newList.size() < maxSizeForDiffUtil) {
-                            diffResult = new DiffCalculator<TaskItem>().createDiffResult(oldList[0], newList);
-                        } else {
-                            diffResult = null;
-                        }
+                    //we defer to whatever the db says here so that we don't get out of sync
+                    taskItems.clear();
+                    taskItems.addAll(payload.first);
+                    latestDiffSpec = new DiffSpec(payload.second, systemTimeWrapper);
 
-                        //hop back to the UI thread to update the UI
-                        return new Pair<>(newList, diffResult);
-                    })
-                    .onPostExecute(payload -> {
-
-                        logger.i(LOG_TAG, "4 updating in memory copy");
-
-                        //we defer to whatever the db says here so that we don't get out of sync
-                        taskItems.clear();
-                        taskItems.addAll(payload.first);
-                        latestDiffSpec = new DiffSpec(payload.second, systemTimeWrapper);
-
-                        //notify immediately so that the changes are picked up
-                        notifyObservers();
-
-                        //see the note at the top about RefreshStatus for a simple version
-                        boolean triggerNewRefresh = false;
-                        synchronized (refreshStatus) {
-                            if (refreshStatus == ADDITIONAL_REFRESH_WAITING) {
-                                triggerNewRefresh = true;
-                            }
-                            refreshStatus = IDLE;
-                        }
-                        if (triggerNewRefresh) {
-                            fetchLatestFromDb();
-                        }
-
-                    })
-                    .execute(taskItems);
-        }
+                    //notify immediately so that the changes are picked up
+                    notifyObservers();
+                })
+                .execute(taskItems);
     }
 
     //common db operations
@@ -430,20 +364,6 @@ public class TaskListModel extends ObservableImp implements Diffable {
         return filter;
     }
 
-    public int getMaxSizeForDiffUtil() {
-        return maxSizeForDiffUtil;
-    }
-
-    public void setMaxSizeForDiffUtil(int maxSizeForDiffUtil) {
-        this.maxSizeForDiffUtil = maxSizeForDiffUtil;
-        notifyObservers();
-    }
-
-    public boolean isValidItemTitle(String title) {
-        return (title == null ? false : (title.length() > 0));
-    }
-
-
     // methods that let us drive a view adapter easily
 
     public TaskItem get(int index) {
@@ -529,6 +449,8 @@ public class TaskListModel extends ObservableImp implements Diffable {
 
         DiffSpec latestDiffSpecAvailable = latestDiffSpec;
         latestDiffSpec = createFullDiffSpec(systemTimeWrapper);
+
+        logger.i(LOG_TAG, "maxAge:" + maxAgeMs + " latest timestamp:" + latestDiffSpecAvailable.timeStamp + " current:" + systemTimeWrapper.currentTimeMillis());
 
         if (systemTimeWrapper.currentTimeMillis() - latestDiffSpecAvailable.timeStamp < maxAgeMs) {
             return latestDiffSpecAvailable;

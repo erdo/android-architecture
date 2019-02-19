@@ -12,8 +12,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import co.early.fore.core.WorkMode;
 import co.early.fore.core.callbacks.FailureCallbackWithPayload;
@@ -28,6 +26,7 @@ import co.early.fore.retrofit.testhelpers.StubbedServiceDefinition;
 import retrofit2.Retrofit;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -66,17 +65,10 @@ public class TaskFetcherIntegrationTest {
     private SystemTimeWrapper mockSystemTimeWrapper;
 
 
-    private static final List<TaskItem> tasksFromServer = Stream.of(
-            new TaskItem(0, "mock eggs", "buy eggs at the shop"),
-            new TaskItem(0, "mock milk", "buy milk at the shop"),
-            new TaskItem(0, "mock bread", "buy bread at the shop")
-    ).collect(Collectors.toList());
-
-
     private static StubbedServiceDefinition<List<TaskItem>> stubbedSuccess = new StubbedServiceDefinition<>(
             200, //stubbed HTTP code
             "tasks/success.json", //stubbed body response
-            tasksFromServer); //expected result
+            StateBuilder.TASK_ITEMS); //expected result
 
     private static StubbedServiceDefinition<UserMessage> stubbedFailEmpty = new StubbedServiceDefinition<>(
             200, //stubbed HTTP code
@@ -129,7 +121,7 @@ public class TaskFetcherIntegrationTest {
         //assert
         verify(mockSuccessCallback, times(1)).success();
         verify(mockFailureCallbackWithPayload, never()).fail(any());
-        verify(mockTaskListModel, times(1)).addManyFilterOutDuplicates(tasksFromServer);
+        verify(mockTaskListModel, times(1)).addManyFilterOutDuplicates(argThat(new StateBuilder.MatchesTasksFromServer(logger, LOG_TAG)));
         Assert.assertEquals(false, fetcher.isBusy());
     }
 
@@ -226,7 +218,6 @@ public class TaskFetcherIntegrationTest {
         verify(mockTaskListModel, never()).addManyFilterOutDuplicates(any());
         Assert.assertEquals(false, fetcher.isBusy());
     }
-
 
     private Retrofit stubbedRetrofit(StubbedServiceDefinition stubbedServiceDefinition){
         return CustomRetrofitBuilder.create(

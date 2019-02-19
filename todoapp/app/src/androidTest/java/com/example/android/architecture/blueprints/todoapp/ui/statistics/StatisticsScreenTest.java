@@ -18,7 +18,6 @@ package com.example.android.architecture.blueprints.todoapp.ui.statistics;
 
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.Espresso;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
@@ -27,9 +26,7 @@ import com.example.android.architecture.blueprints.todoapp.App;
 import com.example.android.architecture.blueprints.todoapp.R;
 import com.example.android.architecture.blueprints.todoapp.TestAppModule;
 import com.example.android.architecture.blueprints.todoapp.ui.taskdetail.TaskDetailActivity;
-import com.example.android.architecture.blueprints.todoapp.util.EspressoIdlingResource;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -57,12 +54,7 @@ public class StatisticsScreenTest {
      */
     @Rule
     public ActivityTestRule<StatisticsActivity> mStatisticsActivityTestRule =
-            new ActivityTestRule<StatisticsActivity>(StatisticsActivity.class, true, false){
-                @Override
-                protected void beforeActivityLaunched() {
-                    super.beforeActivityLaunched();
-                }
-            };
+            new ActivityTestRule<StatisticsActivity>(StatisticsActivity.class, true, false);
 
     /**
      * Setup your test fixture with a fake task id. The {@link TaskDetailActivity} is started with
@@ -84,25 +76,6 @@ public class StatisticsScreenTest {
         // Lazily start the Activity from the ActivityTestRule
         Intent startIntent = new Intent();
         mStatisticsActivityTestRule.launchActivity(startIntent);
-    }
-
-    /**
-     * Prepare your test fixture for this test. In this case we register an IdlingResources with
-     * Espresso. IdlingResource resource is a great way to tell Espresso when your app is in an
-     * idle state. This helps Espresso to synchronize your test actions, which makes tests
-     * significantly more reliable.
-     */
-    @Before
-    public void registerIdlingResource() {
-        Espresso.registerIdlingResources(EspressoIdlingResource.getIdlingResource());
-    }
-
-    /**
-     * Unregister your Idling Resource so it can be garbage collected and does not leak any memory.
-     */
-    @After
-    public void unregisterIdlingResource() {
-        Espresso.unregisterIdlingResources(EspressoIdlingResource.getIdlingResource());
     }
 
     @Test

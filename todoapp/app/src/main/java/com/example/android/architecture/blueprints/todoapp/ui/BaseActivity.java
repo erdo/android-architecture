@@ -17,14 +17,11 @@
 package com.example.android.architecture.blueprints.todoapp.ui;
 
 import android.os.Bundle;
-import android.support.annotation.VisibleForTesting;
 import android.support.design.widget.Snackbar;
-import android.support.test.espresso.IdlingResource;
 import android.support.v7.app.AppCompatActivity;
 
 import com.example.android.architecture.blueprints.todoapp.App;
 import com.example.android.architecture.blueprints.todoapp.R;
-import com.example.android.architecture.blueprints.todoapp.util.EspressoIdlingResource;
 
 public class BaseActivity extends AppCompatActivity {
 
@@ -38,10 +35,5 @@ public class BaseActivity extends AppCompatActivity {
         if (!isFinishing()){
             Snackbar.make(findViewById(R.id.contentFrame), message, Snackbar.LENGTH_LONG).show();
         }
-    }
-
-    @VisibleForTesting
-    public IdlingResource getCountingIdlingResource() {
-        return EspressoIdlingResource.getIdlingResource();
     }
 }

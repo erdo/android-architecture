@@ -1,17 +1,17 @@
 [
   {
-    "title":"mock eggs",
-    "description":"buy eggs at the shop",
+    "title":"eggs",
+    "description":"eggs, buy from the shop",
     "completed":false
   },
   {
-    "title":"mock milk",
-    "description":"buy milk at the shop",
+    "title":"milk",
+    "description":"milk, buy from the shop",
     "completed":false
   },
   {
-    "title":"mock bread",
-    "description":"buy bread at the shop",
+    "title":"bread",
+    "description":"bread, buy from the shop",
     "completed":false
   }
 ]

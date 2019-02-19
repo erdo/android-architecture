@@ -1,6 +1,5 @@
 package com.example.android.architecture.blueprints.todoapp.feature.tasks;
 
-import com.example.android.architecture.blueprints.todoapp.api.tasks.TaskItemPojo;
 import com.example.android.architecture.blueprints.todoapp.api.tasks.TaskItemService;
 import com.example.android.architecture.blueprints.todoapp.message.UserMessage;
 
@@ -10,10 +9,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import co.early.fore.core.WorkMode;
 import co.early.fore.core.callbacks.FailureCallbackWithPayload;
@@ -25,6 +20,7 @@ import co.early.fore.core.time.SystemTimeWrapper;
 import co.early.fore.retrofit.CallProcessor;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -43,18 +39,6 @@ public class TaskFetcherUnitTest {
     public static final String LOG_TAG = TaskFetcherIntegrationTest.class.getSimpleName();
 
     private static Logger logger = new SystemLogger();
-
-
-    private static final String TITLE = "task title";
-    private static final String DESCRIPTION = "task description";
-
-    private static final List<TaskItemPojo> TASK_POJOS_FROM_SERVER = Stream.of(
-            new TaskItemPojo(TITLE, DESCRIPTION, false))
-            .collect(Collectors.toList());
-
-    private static final List<TaskItem> TASK_ITEMS_FROM_MODEL = Stream.of(
-            new TaskItem(0, TITLE, DESCRIPTION))
-            .collect(Collectors.toList());
 
 
     @Mock
@@ -103,7 +87,7 @@ public class TaskFetcherUnitTest {
 
         //arrange
         new StateBuilder(mockCallProcessor)
-                .getTasksSuccess(TASK_POJOS_FROM_SERVER);
+                .getTasksSuccess(StateBuilder.TASK_POJOS);
         TaskFetcher fetcher = new TaskFetcher(
                 mockTaskListModel,
                 mockTaskItemService,
@@ -120,7 +104,7 @@ public class TaskFetcherUnitTest {
         //assert
         verify(mockSuccessCallback, times(1)).success();
         verify(mockFailureCallbackWithPayload, never()).fail(any());
-        verify(mockTaskListModel, Mockito.times(1)).addManyFilterOutDuplicates(TASK_ITEMS_FROM_MODEL);
+        verify(mockTaskListModel, Mockito.times(1)).addManyFilterOutDuplicates(argThat(new StateBuilder.MatchesTasksFromServer(logger, LOG_TAG)));
         Assert.assertEquals(false, fetcher.isBusy());
     }
 

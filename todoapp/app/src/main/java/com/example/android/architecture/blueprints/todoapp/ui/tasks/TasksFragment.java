@@ -198,6 +198,6 @@ public class TasksFragment extends Fragment implements SyncableView {
         filteringLabelView.setText(getResources().getString(taskListModel.getCurrentFilter().labelStringResId));
         swipeRefreshLayout.setRefreshing(taskFetcher.isBusy());
 
-        listAdapter.notifyDataSetChanged();
+        listAdapter.notifyDataSetChangedAuto();
     }
 }

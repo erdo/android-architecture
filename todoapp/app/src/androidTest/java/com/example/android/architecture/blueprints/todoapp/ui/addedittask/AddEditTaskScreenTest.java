@@ -19,7 +19,6 @@ package com.example.android.architecture.blueprints.todoapp.ui.addedittask;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.Espresso;
 import android.support.test.espresso.intent.rule.IntentsTestRule;
 import android.support.test.espresso.matcher.BoundedMatcher;
 import android.support.test.filters.LargeTest;
@@ -35,11 +34,9 @@ import com.example.android.architecture.blueprints.todoapp.TestUtils;
 import com.example.android.architecture.blueprints.todoapp.feature.tasks.CurrentTaskModel;
 import com.example.android.architecture.blueprints.todoapp.feature.tasks.TaskListModel;
 import com.example.android.architecture.blueprints.todoapp.ui.addedit.AddEditTaskActivity;
-import com.example.android.architecture.blueprints.todoapp.util.EspressoIdlingResource;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -72,12 +69,7 @@ public class AddEditTaskScreenTest {
      */
     @Rule
     public ActivityTestRule<AddEditTaskActivity> mActivityTestRule =
-            new ActivityTestRule<AddEditTaskActivity>(AddEditTaskActivity.class, false, false){
-                @Override
-                protected void beforeActivityLaunched() {
-                    super.beforeActivityLaunched();
-                }
-            };
+            new ActivityTestRule<AddEditTaskActivity>(AddEditTaskActivity.class, false, false);
 
     /**
      * Prepare your test fixture for this test. In this case we register an IdlingResources with
@@ -87,17 +79,8 @@ public class AddEditTaskScreenTest {
      */
     @Before
     public void setup() {
-        Espresso.registerIdlingResources(EspressoIdlingResource.getIdlingResource());
         App.inst().injectTestAppModule(new TestAppModule(App.inst()));
         App.inst().getAppComponent().getTaskListModel().clear();
-    }
-
-    /**
-     * Unregister your Idling Resource so it can be garbage collected and does not leak any memory.
-     */
-    @After
-    public void tearDown() {
-        Espresso.unregisterIdlingResources(EspressoIdlingResource.getIdlingResource());
     }
 
     @Test

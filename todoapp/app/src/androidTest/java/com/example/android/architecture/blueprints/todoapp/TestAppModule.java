@@ -14,15 +14,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.inject.Singleton;
-
 import co.early.fore.core.WorkMode;
 import co.early.fore.core.callbacks.SuccessCallbackWithPayload;
 import co.early.fore.core.logging.Logger;
 import co.early.fore.core.logging.SystemLogger;
 import co.early.fore.retrofit.CallProcessor;
-import dagger.Module;
-import dagger.Provides;
 import retrofit2.Retrofit;
 
 import static org.mockito.Matchers.any;
@@ -32,7 +28,6 @@ import static org.mockito.Mockito.mock;
 /**
  * Copyright © 2019 early.co. All rights reserved.
  */
-@Module
 public class TestAppModule extends AppModule {
 
     private final static String LOG_TAG = TestAppModule.class.getSimpleName();
@@ -60,15 +55,11 @@ public class TestAppModule extends AppModule {
      */
 
     @Override
-    @Provides
-    @Singleton
     public WorkMode provideWorkMode() {
         return WorkMode.SYNCHRONOUS;
     }
 
     @Override
-    @Provides
-    @Singleton
     public Logger provideLogger() {
         SystemLogger systemLogger = new SystemLogger();
         systemLogger.i(LOG_TAG, "created logger");
@@ -81,8 +72,6 @@ public class TestAppModule extends AppModule {
      */
 
     @Override
-    @Provides
-    @Singleton
     public TaskItemDatabase provideTaskItemDatabase(WorkMode workMode) {
         return TaskItemDatabase.getInstance(app, true, workMode);
     }
@@ -93,8 +82,6 @@ public class TestAppModule extends AppModule {
      */
 
     @Override
-    @Provides
-    @Singleton
     public CallProcessor<UserMessage> provideCallProcessor(Logger logger) {
         logger.i(LOG_TAG, "provideCallProcessor()");
 
@@ -116,8 +103,6 @@ public class TestAppModule extends AppModule {
     }
 
     @Override
-    @Provides
-    @Singleton
     public TaskItemService provideTaskItemService(Retrofit retrofit) {
         return mock(TaskItemService.class);
     }
