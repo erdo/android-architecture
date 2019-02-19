@@ -21,7 +21,7 @@ The todo-mvo sample uses the following dependencies:
 * **Retrofit2** - for networking code
 * **Room** - for database code
 * **Dagger2** - for basic DI
-* **Mockito, JUnit, Espresso, Robolectric** - frameworks used for tests.
+* **Mockito, JUnit, Espresso, Robolectric** - for testing
 
 ### Designing the app
 
