@@ -1,7 +1,7 @@
 # todo-mvo
 
 
-_**Please see the [dev.to article](https://dev.to/erdo/tutorial-android-architecture-blueprints-full-todo-app-mvo-edition-259o) for the full details of this implementation**_
+_**Please see the [dev.to article](https://dev.to/erdo/tutorial-android-architecture-blueprints-full-todo-app-mvo-edition-259o) for the full details of this implementation, it's meant for comparison purposes only - if you are looking for a place to start writting an app with fore, the [fore repo](https://erdo.github.io/android-fore/) has much clearer and more up-to-date and examples**_
 
 This version of the android-architecture todo app is written in the [MVO](https://erdo.github.io/android-fore/00-architecture.html#shoom) architectural style. It uses the [android-fore](https://erdo.github.io/android-fore/) library for its Observer implementation. The sample aims to:
 

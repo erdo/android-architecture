@@ -1,15 +1,24 @@
 ---
 title: Tutorial: android architecture blueprints, full todo app (MVO edition)
-published: false
+published: true
 description:  We take the Android Architecture Blueprints todo app and re-write in MVO using the fore library
 cover_image: https://thepracticaldev.s3.amazonaws.com/i/ivyftij3ctd7ee5u1146.png
 tags: Android, Java, fore, MVO
-series: android fore tutorials
 ---
 
-**[Difficulty: 4/5]**
+_This is part of a series on android [fore](https://erdo.github.io/android-fore/)_
 
-The [Android Architecture Blueprints](https://github.com/googlesamples/android-architecture) showcase different android architectures by implementing the same to-do type app, multiple times (once for each architecture variant).
+| Tutorials in Series                 |
+|:------------------------------------|
+|1) Tutorial: [Spot the deliberate bug](https://dev.to/erdo/tutorial-spot-the-deliberate-bug-165k) |
+|2) Tutorial: [Android fore basics](https://dev.to/erdo/tutorial-android-fore-basics-1155) |
+|3) Tutorial: [Android architecture blueprints, full todo app (MVO edition)](https://dev.to/erdo/tutorial-android-architecture-blueprints-full-todo-app-mvo-edition-259o) |
+|4) Tutorial: [Android state v. event](https://dev.to/erdo/tutorial-android-state-v-event-3n31)|
+|5) Tutorial: [Kotlin Coroutines, Retrofit and fore](https://dev.to/erdo/tutorial-kotlin-coroutines-retrofit-and-fore-3874)|
+
+The [Android Architecture Blueprints](https://github.com/googlesamples/android-architecture)* showcase different android architectures by implementing the same to-do type app, multiple times (once for each architecture variant).
+
+_*Note that the Android Architecture Blueprints repo has now abandoned the original v1 of the todo app - the MVO implementation here remains the Java implementation with the fewest lines of code by quite a wide margin._
 
 In this post we throw another architecture into the mix: [MVO](https://erdo.github.io/android-fore/00-architecture.html#shoom) implemented with [fore](https://erdo.github.io/android-fore/).
 
@@ -18,7 +27,7 @@ In this post we throw another architecture into the mix: [MVO](https://erdo.gith
 
 Our fork is written in Java, it's based on the reference MVP implementation.
 
- - it uses **less** code that any other Java implementation (3261 lines)
+ - it uses **less** code that any other Java implementation (1971 lines, 3261 lines inc. tests)
  - a Kotlin-MVO version would use even less
  - a lot of the remaining code has been moved out of the view layer
  - the structure of the app is arguably a lot clearer.
@@ -67,7 +76,7 @@ Everything above is a good idea in my opinion, but not specific to MVO, the next
 The **ui** package is where you will find the **addedit**, **statistics**, **taskdetail**, and **tasks** sub-packages which map to the screens of the app. Everything here is closely related to the UI and therefore the Android framework, code here is difficult and slow to test, so we want to make it as thin and as simple as we can. So here you'll find the Activity and Fragment classes, plus occasionally Adapters, or any other class directly related to that specific view. There are no Presenter or Contract classes required here though.
 
 ### feature package
-Now for the **feature** package. If you imagine the app as existing in its own right, without reference to any specific UI, then the feature package is where the bulk of it would reside.
+Now for the **feature** package. If you imagine the app as existing in its own right, without reference to any specific UI, then the feature package is where the bulk of it would reside. This is what you would all the domain layer if you wanted to name things in line with clean architecture.
 
 For this small app there is only one "feature" - todo/task management, so there is only one sub-package here: **tasks**. Most commercial apps are going to have a lot more features here, typical examples would be things like: *account*, *shoppingbasket*, *favourites*, *chat*, *loyalty*, *inbox*, *playlists* etc.
 
@@ -103,7 +112,7 @@ Here's the rest of the feature:
 
 All this does is: connect to the network, fetch tasks from a back end, and add them to local storage.
 
-A lot of the work associated with connecting to a network: parsing responses; handling errors; threading; etc is handled by fore's [CallProcessor](https://erdo.github.io/android-fore/04-more-fore.html#retrofit-and-the-callprocessor) which is a thin wrapper over Retrofit and OkHttp. We pass the downloaded tasks straight to the **TaskListModel** which handles the database work. So all we're left with in this class is a little business logic.
+A lot of the work associated with connecting to a network: parsing responses; handling errors; threading; etc is handled by fore's [CallProcessor](https://erdo.github.io/android-fore/04-more-fore.html#retrofit2-and-apollo) which is a thin wrapper over Retrofit and OkHttp (there is also one for Apollo and one for Ktor). We pass the downloaded tasks straight to the **TaskListModel** which handles the database work. So all we're left with in this class is a little business logic.
 
 It's **observable**, so it will let any observers know when its state has changed (e.g. when isBusy() switches back to false).
 
@@ -175,7 +184,7 @@ public void showNoActiveTasks() {
 
 ```
 
-Even for simple UIs, code like this can get very complicated and can cause subtle, hard to spot bugs in the UI. Here is the full list of methods needed to support just the main tasks UI:
+Even for simple UIs, code like this can get very complicated and can cause subtle, hard to spot bugs in the UI. Here is the full list of methods needed to support just the main tasks UI (note these are just the method signatures, we're not even showing the full methods):
 
 
 ``` java
@@ -227,7 +236,7 @@ public void showCompletedTasksCleared() {...}
 public void showLoadingTasksError() {...}
 ```
 
-The MVO syncView() convention is about to let us delete all of these methods. Everything above can be written as:
+The MVO syncView() convention is about to let us delete all of these methods. It's a little shocking if you're not used to the syncView() convention, but in fact everything above can be replaced with:
 
 ``` java
 @Override
@@ -253,7 +262,7 @@ The power of the syncView() convention is discussed at length [here](https://erd
 
 Did you spot the **notifyDataSetChangedAuto()**? (rather than the more usual notifyDataSetChanged()) - this is fore's way of supporting animated list changes, in this case it's backed by Android's DiffUtil but there is another more performant version that you can use for a simple in memory list demonstrated [here](https://erdo.github.io/android-fore/#fore-3-adapter-example). Either way it's a simple call to notifyDataSetChangedAuto() from within your syncView().
 
-_At this point you might be thinking that **fore** must be some huge complicated library to support all this, actually it's [tiny](https://erdo.github.io/android-fore/#method-counts). A lot of the power comes from the MVO concept itself._
+_At this point you might be thinking that **fore** must be some huge complicated library to support all this, actually it's tiny (like 500 lines of code tiny). A lot of the power comes from the MVO concept itself._
 
 ### Rotation support
 
