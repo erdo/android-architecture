@@ -19,8 +19,8 @@ import co.early.fore.core.WorkMode;
 import co.early.fore.core.logging.AndroidLogger;
 import co.early.fore.core.logging.Logger;
 import co.early.fore.core.time.SystemTimeWrapper;
-import co.early.fore.retrofit.CallProcessor;
-import co.early.fore.retrofit.InterceptorLogging;
+import co.early.fore.net.InterceptorLogging;
+import co.early.fore.net.retrofit2.CallProcessorRetrofit2;
 import retrofit2.Retrofit;
 
 import static co.early.fore.core.Affirm.notNull;
@@ -62,7 +62,7 @@ class ObjectGraph {
         Retrofit retrofit = CustomRetrofitBuilder.create(
                 new CustomGlobalRequestInterceptor(logger),
                 new InterceptorLogging(logger));//logging interceptor should be the last one
-        CallProcessor<UserMessage> callProcessor = new CallProcessor<UserMessage>(
+        CallProcessorRetrofit2<UserMessage> callProcessor = new CallProcessorRetrofit2<UserMessage>(
                 new CustomGlobalErrorHandler(logger),
                 logger);
         TaskFetcher taskFetcher = new TaskFetcher(

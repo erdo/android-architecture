@@ -17,7 +17,7 @@ import co.early.fore.core.logging.Logger;
 import co.early.fore.core.logging.SystemLogger;
 import co.early.fore.core.observer.Observer;
 import co.early.fore.core.time.SystemTimeWrapper;
-import co.early.fore.retrofit.CallProcessor;
+import co.early.fore.net.retrofit2.CallProcessorRetrofit2;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
@@ -50,7 +50,7 @@ public class TaskFetcherUnitTest {
     @Mock
     private SystemTimeWrapper mockSystemTimeWrapper;
     @Mock
-    private CallProcessor<UserMessage> mockCallProcessor;
+    private CallProcessorRetrofit2<UserMessage> mockCallProcessor;
     @Mock
     private TaskItemService mockTaskItemService;
     @Mock

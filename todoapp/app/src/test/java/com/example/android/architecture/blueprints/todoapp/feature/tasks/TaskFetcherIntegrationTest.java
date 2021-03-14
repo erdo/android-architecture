@@ -19,10 +19,10 @@ import co.early.fore.core.callbacks.SuccessCallback;
 import co.early.fore.core.logging.Logger;
 import co.early.fore.core.logging.SystemLogger;
 import co.early.fore.core.time.SystemTimeWrapper;
-import co.early.fore.retrofit.CallProcessor;
-import co.early.fore.retrofit.InterceptorLogging;
-import co.early.fore.retrofit.testhelpers.InterceptorStubbedService;
-import co.early.fore.retrofit.testhelpers.StubbedServiceDefinition;
+import co.early.fore.net.InterceptorLogging;
+import co.early.fore.net.retrofit2.CallProcessorRetrofit2;
+import co.early.fore.net.testhelpers.InterceptorStubbedService;
+import co.early.fore.net.testhelpers.StubbedServiceDefinition;
 import retrofit2.Retrofit;
 
 import static org.mockito.Matchers.any;
@@ -40,7 +40,7 @@ import static org.mockito.Mockito.verify;
  * in /resources. This all happens in OkHttp land so the model under test is not aware of any
  * difference.
  * <p>
- * As usual for tests, we setup the {@link CallProcessor} with {@link WorkMode#SYNCHRONOUS} so
+ * As usual for tests, we setup the {@link CallProcessorRetrofit2} with {@link WorkMode#SYNCHRONOUS} so
  * that everything plays out in a single thread.
  * <p>
  * Here we are testing what happens to the model when the server returns: a successful response;
@@ -53,7 +53,7 @@ public class TaskFetcherIntegrationTest {
 
     private Logger logger = new SystemLogger();
     private InterceptorLogging interceptorLogging;
-    private CallProcessor<UserMessage> callProcessor;
+    private CallProcessorRetrofit2<UserMessage> callProcessor;
 
     @Mock
     private SuccessCallback mockSuccessCallback;
@@ -92,7 +92,7 @@ public class TaskFetcherIntegrationTest {
         MockitoAnnotations.initMocks(this);
 
         interceptorLogging = new InterceptorLogging(logger);
-        callProcessor = new CallProcessor<UserMessage>(new CustomGlobalErrorHandler(logger), logger);
+        callProcessor = new CallProcessorRetrofit2<>(new CustomGlobalErrorHandler(logger), logger);
     }
 
 

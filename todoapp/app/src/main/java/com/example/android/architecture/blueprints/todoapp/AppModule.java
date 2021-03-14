@@ -16,8 +16,8 @@ import co.early.fore.core.WorkMode;
 import co.early.fore.core.logging.AndroidLogger;
 import co.early.fore.core.logging.Logger;
 import co.early.fore.core.time.SystemTimeWrapper;
-import co.early.fore.retrofit.CallProcessor;
-import co.early.fore.retrofit.InterceptorLogging;
+import co.early.fore.net.InterceptorLogging;
+import co.early.fore.net.retrofit2.CallProcessorRetrofit2;
 import dagger.Module;
 import dagger.Provides;
 import retrofit2.Retrofit;
@@ -94,9 +94,9 @@ public class AppModule {
 
     @Provides
     @Singleton
-    public CallProcessor<UserMessage> provideCallProcessor(Logger logger) {
+    public CallProcessorRetrofit2<UserMessage> provideCallProcessor(Logger logger) {
         logger.i(LOG_TAG, "provideCallProcessor()");
-        return new CallProcessor<UserMessage>(new CustomGlobalErrorHandler(logger), logger);
+        return new CallProcessorRetrofit2<>(new CustomGlobalErrorHandler(logger), logger);
     }
 
     @Provides

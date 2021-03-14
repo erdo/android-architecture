@@ -17,7 +17,7 @@ import co.early.fore.core.callbacks.SuccessCallback;
 import co.early.fore.core.logging.Logger;
 import co.early.fore.core.observer.ObservableImp;
 import co.early.fore.core.time.SystemTimeWrapper;
-import co.early.fore.retrofit.CallProcessor;
+import co.early.fore.net.retrofit2.CallProcessorRetrofit2;
 
 /**
  * Gets a list of tasks from the network, checks for duplicates and adds them to the database
@@ -33,7 +33,7 @@ public class TaskFetcher extends ObservableImp {
     //notice how we use the TaskListModel, we don't go directly to the db layer
     private final TaskListModel taskListModel;
     private final TaskItemService service;
-    private final CallProcessor<UserMessage> callProcessor;
+    private final CallProcessorRetrofit2<UserMessage> callProcessor;
     private final SystemTimeWrapper systemTimeWrapper;
     private final WorkMode workMode;
     private final Logger logger;
@@ -41,7 +41,7 @@ public class TaskFetcher extends ObservableImp {
     private boolean busy;
 
     @Inject
-    public TaskFetcher(TaskListModel taskListModel, TaskItemService service, CallProcessor<UserMessage> callProcessor,
+    public TaskFetcher(TaskListModel taskListModel, TaskItemService service, CallProcessorRetrofit2<UserMessage> callProcessor,
                        SystemTimeWrapper systemTimeWrapper, Logger logger, WorkMode workMode) {
         super(workMode);
         this.taskListModel = Affirm.notNull(taskListModel);

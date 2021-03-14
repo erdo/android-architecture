@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 import co.early.fore.core.callbacks.FailureCallbackWithPayload;
 import co.early.fore.core.callbacks.SuccessCallbackWithPayload;
 import co.early.fore.core.logging.Logger;
-import co.early.fore.retrofit.CallProcessor;
+import co.early.fore.net.retrofit2.CallProcessorRetrofit2;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -40,9 +40,9 @@ public class StateBuilder {
             new TaskItemPojo(TITLE_02, TITLE_02 + DESCRIPTION, false))
             .collect(Collectors.toList());
 
-    private CallProcessor<UserMessage> mockCallProcessor;
+    private CallProcessorRetrofit2<UserMessage> mockCallProcessor;
 
-    StateBuilder(CallProcessor<UserMessage> mockCallProcessor) {
+    StateBuilder(CallProcessorRetrofit2<UserMessage> mockCallProcessor) {
         this.mockCallProcessor = mockCallProcessor;
     }
 

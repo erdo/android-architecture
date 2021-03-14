@@ -9,8 +9,8 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
 import co.early.fore.core.logging.Logger;
-import co.early.fore.retrofit.ErrorHandler;
-import co.early.fore.retrofit.MessageProvider;
+import co.early.fore.net.MessageProvider;
+import co.early.fore.net.retrofit2.ErrorHandler;
 import okhttp3.Request;
 import retrofit2.Response;
 

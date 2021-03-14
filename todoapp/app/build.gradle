@@ -86,9 +86,7 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
     implementation "com.google.dagger:dagger:2.7"
     annotationProcessor "com.google.dagger:dagger-compiler:2.7"
-    implementation (group: 'co.early.fore', name: 'fore-core', version: "$rootProject.foreVersion", ext: 'aar')
-    implementation (group: 'co.early.fore', name: 'fore-retrofit', version: "$rootProject.foreVersion", ext: 'aar')
-    implementation (group: 'co.early.fore', name: 'fore-adapters', version: "$rootProject.foreVersion", ext: 'aar')
+    implementation "co.early.fore:fore-jv:$rootProject.foreVersion"
 
     // Dependencies for local unit tests
     testImplementation "junit:junit:$rootProject.ext.junitVersion"
