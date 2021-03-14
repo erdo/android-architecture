@@ -12,7 +12,7 @@ _This is part of a series on android [fore](https://erdo.github.io/android-fore/
 |:------------------------------------|
 |1) Tutorial: [Spot the deliberate bug](https://dev.to/erdo/tutorial-spot-the-deliberate-bug-165k) |
 |2) Tutorial: [Android fore basics](https://dev.to/erdo/tutorial-android-fore-basics-1155) |
-|3) Tutorial: [Android architecture blueprints, full todo app (MVO edition)](https://dev.to/erdo/tutorial-android-architecture-blueprints-full-todo-app-mvo-edition-259o) |
+|3) Tutorial: [Android architecture, full todo app (MVO edition)](https://dev.to/erdo/tutorial-android-architecture-blueprints-full-todo-app-mvo-edition-259o) |
 |4) Tutorial: [Android state v. event](https://dev.to/erdo/tutorial-android-state-v-event-3n31)|
 |5) Tutorial: [Kotlin Coroutines, Retrofit and fore](https://dev.to/erdo/tutorial-kotlin-coroutines-retrofit-and-fore-3874)|
 
